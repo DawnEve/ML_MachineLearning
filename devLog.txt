@@ -1,0 +1,2 @@
+> v0.0.1 SVM with linear kernal.
+> v0.0.2 modify SVM.

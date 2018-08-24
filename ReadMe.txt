@@ -1,4 +1,10 @@
 Machine Learning with Python
 
+
+refer
+
 1. SVM
-> v0.0.1 SVM with linear kernal.
+http://scikit-learn.org/stable/modules/svm.html
+http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
+
+
