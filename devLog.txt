@@ -2,3 +2,4 @@
 > v0.0.2 modify SVM.
 > v0.0.3 add logistic.
 > v0.0.4 add SVM/*.R
+> v0.0.5 add KNN

@@ -46,5 +46,11 @@ https://datascienceplus.com/perform-logistic-regression-in-r/
 https://www.analyticsvidhya.com/blog/2015/11/beginners-guide-on-logistic-regression-in-r/
 
 
+====================
+3.KNN
+数据集： http://archive.ics.uci.edu/ml/index.php
+
+
+
 
 
