@@ -2,6 +2,9 @@
 #LOGIT REGRESSION | R DATA ANALYSIS EXAMPLES
 #https://stats.idre.ucla.edu/r/dae/logit-regression/
 
+#例：A researcher is interested in how variables, such as GRE (Graduate Record Exam scores), GPA (grade point average) and prestige of the undergraduate institution, effect admission into graduate school. The response variable, admit/don’t admit, is a binary variable.
+
+
 #
 library(aod)
 library(ggplot2)
@@ -73,7 +76,4 @@ newdata1
 #that the type of prediction is a predicted probability (type="response").
 newdata1$rankP <- predict(mylogit, newdata = newdata1, type = "response")
 newdata1
-
-#refer
-# https://stats.idre.ucla.edu/r/dae/logit-regression/
 
