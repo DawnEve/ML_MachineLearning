@@ -51,6 +51,14 @@ https://www.analyticsvidhya.com/blog/2015/11/beginners-guide-on-logistic-regress
 数据集： http://archive.ics.uci.edu/ml/index.php
 
 
+====================
+4.Tree & RF
+
+干货 | 基于R语言和SPSS的决策树算法介绍及应用
+moojnn  大数据魔镜  2015-11-06
+
+
+
 
 
 

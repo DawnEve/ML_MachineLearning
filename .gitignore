@@ -3,6 +3,8 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 
+# R
+*.Rhistory
 
 
 #for jupyter notebook
