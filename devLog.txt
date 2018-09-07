@@ -4,3 +4,4 @@
 > v0.0.4 add SVM/*.R
 > v0.0.5 add KNN
 > v0.0.6 add decision tree & random forest
+> v0.0.7 add Bayes

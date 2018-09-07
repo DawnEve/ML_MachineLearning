@@ -57,8 +57,28 @@ https://www.analyticsvidhya.com/blog/2015/11/beginners-guide-on-logistic-regress
 干货 | 基于R语言和SPSS的决策树算法介绍及应用
 moojnn  大数据魔镜  2015-11-06
 
+====================
+5.NB: naive bayes
 
+(1) 添加数据集 NB/breast-cancer-wisconsin.txt
+#data fromhttps://archive.ics.uci.edu/ml/index.php
+#https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/breast-cancer-wisconsin.data
 
+https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/breast-cancer-wisconsin.names
+#  Attribute                     Domain
+   -- -----------------------------------------
+   1. Sample code number            id number
+   2. Clump Thickness               1 - 10 肿块密度
+   3. Uniformity of Cell Size       1 - 10 细胞大小均一性
+   4. Uniformity of Cell Shape      1 - 10 细胞形状均一性
+   5. Marginal Adhesion             1 - 10 边界粘附
+   6. Single Epithelial Cell Size   1 - 10 单个上皮细胞大小
+   7. Bare Nuclei                   1 - 10 裸核
+   8. Bland Chromatin               1 - 10 微受激染色质
+   9. Normal Nucleoli               1 - 10 正常核
+  10. Mitoses                       1 - 10 有丝分裂
+  11. Class:                        (2 for benign良性, 4 for malignant恶性)
+除掉id列，一个9个输入属性，和一个Class肿瘤判定结果。
 
 
 
