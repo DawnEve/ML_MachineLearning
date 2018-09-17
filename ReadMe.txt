@@ -80,5 +80,18 @@ https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsi
   11. Class:                        (2 for benign良性, 4 for malignant恶性)
 除掉id列，一个9个输入属性，和一个Class肿瘤判定结果。
 
+====================
+6.马尔可夫模型 todo
+
+-https://www.cnblogs.com/baiboy/p/hmm1.html
+-举例法经典HMM扫盲帖：时间序列(七): 高冷贵族: 隐马尔可夫模型 < 原创： Pegasus  夏洛克AIOps  2017-08-24
+-有一点算是MM：捉迷藏 | HMM 隐马尔科夫链 < Math & Lucy  伴露  2016-06-13
+
+
+====================
+7.k fold cross validation
+
+
+
 
 
