@@ -93,5 +93,15 @@ https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsi
 
 
 
+====================
+8.PCA
+
+
+
+
+====================
+ANN / CNN
+
+
 
 

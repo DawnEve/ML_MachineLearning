@@ -33,3 +33,7 @@ deploy_key_rsa
 
 #eclipse
 .settings
+
+
+dustbin/
+backup/

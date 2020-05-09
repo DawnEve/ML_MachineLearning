@@ -6,3 +6,4 @@
 > v0.0.6 add decision tree & random forest
 > v0.0.7 add Bayes
 > v0.0.8 k fold cross validation
+> v0.0.9 PCA in R; py DA; CNN;
