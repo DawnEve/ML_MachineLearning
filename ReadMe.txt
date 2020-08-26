@@ -52,10 +52,25 @@ https://www.analyticsvidhya.com/blog/2015/11/beginners-guide-on-logistic-regress
 
 
 ====================
-4.Tree & RF
+4.Tree & RF 决策树
 
+主要算法: ID3, C4.5, CART;
+
+(1) 基于R
 干货 | 基于R语言和SPSS的决策树算法介绍及应用
 moojnn  大数据魔镜  2015-11-06
+
+
+(2) 基于Py
+
+ID3 无法直接处理数值型的feature。 CART 是不是更好呢？
+
+
+
+
+
+
+
 
 ====================
 5.NB: naive bayes

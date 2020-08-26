@@ -65,19 +65,23 @@ table(fit, x[ind==2,]$Species)
 
 # 问题：knn中的k怎么选择呢？遍历后用最优
 accs=c()
-for(i in 1:round(sqrt(nrow(x_train)))){
+#for(i in 1:){
+#n=round(sqrt(nrow(x_train)))
+n=100
+for(i in 1:n){
   fit <-knn(train=x_train, test=x_test, cl=x[ind==1,]$Species, k=i)
   Freq=table(fit, x[ind==2,]$Species)
   acc <- sum(diag(Freq))/sum(Freq)
   accs=c(accs, acc)
 }
 #可视化
-plot(1:round(sqrt(nrow(x_train))),accs,type = 'b', pch = 20, col= 'blue',
+plot(1:n,accs,type = 'o', pch = 20, col= 'blue',
      main = 'k vs. accuracy',
      xlab = 'k', ylab = 'accuracy')
 #所以取7 8 10 11结果最好
 fit.best <-knn(train=x_train, test=x_test, cl=x[ind==1,]$Species, k=7)
 Freq=table(fit.best, x[ind==2,]$Species)
+Freq
 #预判正确率
 sum(diag(Freq))/sum(Freq) #0.9310345
 #简单而易用的knn算法能够有97%的把握，给出分类信息。
