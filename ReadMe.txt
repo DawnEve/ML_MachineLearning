@@ -6,16 +6,29 @@ Note:
 Python code is edited with Jupyter Notebook.
 
 
+====================
+数据集:
+1.Horse Colic Data Set(可用于分类, 有缺失值)
+https://archive.ics.uci.edu/ml/datasets/Horse+Colic
+logistic 回归: 从疝气病预测病马的死亡率 (斧头书chapter5.3, P85)
+
+
+
+
+
 
 refer
 
 ====================
 1. SVM
+pluskid 的SVM系列教程 http://blog.pluskid.org/?page_id=683
+
 (1)支持向量机通俗导论（理解SVM的三层境界） https://blog.csdn.net/v_july_v/article/details/7624837
 (2)http://scikit-learn.org/stable/modules/svm.html
 http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
 
 Spark机器学习系列之13：支持向量机SVM（Python） https://blog.csdn.net/qq_34531825/article/details/52881804
+
 
 
 (3)核函数是SVM的力量之源！
@@ -33,6 +46,11 @@ https://www.analyticsvidhya.com/blog/2017/09/understaing-support-vector-machine-
 
 
 
+
+
+
+
+
 todo
 EM算法：https://www.zhihu.com/question/27976634
 
@@ -46,9 +64,18 @@ https://datascienceplus.com/perform-logistic-regression-in-r/
 https://www.analyticsvidhya.com/blog/2015/11/beginners-guide-on-logistic-regression-in-r/
 
 
+(2) py 实现 logistic/LR_demo.ipynb
+梯度上升 -> 随机梯度上升(占用更少的计算资源)
+
+
+
+
+
 ====================
 3.KNN
 数据集： http://archive.ics.uci.edu/ml/index.php
+
+
 
 
 ====================
@@ -95,6 +122,13 @@ https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsi
   11. Class:                        (2 for benign良性, 4 for malignant恶性)
 除掉id列，一个9个输入属性，和一个Class肿瘤判定结果。
 
+
+
+(2) py版的 NaiveBayes: 离散型、连续型 NB/Naive_bayes.ipynb
+
+
+
+
 ====================
 6.马尔可夫模型 todo
 
@@ -125,6 +159,7 @@ R实现
 ====================
 ANN / CNN
 
+手写数字识别
 
 
 
