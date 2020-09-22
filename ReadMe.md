@@ -27,8 +27,9 @@ Note: Python and R code is edited with Jupyter Notebook.
 ## 1. k fold cross validation //todo
 
 
-## 2. AUC 曲线 //todo
+## 2. ROC 曲线 //todo
 
+AUC 是曲线下面积
 
 
 
@@ -158,13 +159,19 @@ https://www.analyticsvidhya.com/blog/2017/09/understaing-support-vector-machine-
 
 
 
-## 6. 集成学习 //todo
+## 6. 集成学习
 
 
 ### adaBoost (adaptive boosting)
 
-path: /adaBoost/
+path: /adaBoost/adaBoost_demo.ipynb 
+使用书上数据效果还行。 
+使用 iris 数据效果很不好，正确率 50% ，感觉就是在瞎猜。
 
+
+
+
+#### 非均衡分类问题
 
 
 
@@ -186,9 +193,15 @@ path: /adaBoost/
 
 # 第二章 回归预测
 
+判别的目标是离散的。
+回归的目标是连续的。
+
 
 
 ## 1. 数值型回归: 回归 //todo
+
+path: /regression/linear_lm_demo.ipynb
+
 
 
 ### 岭回归
@@ -295,14 +308,52 @@ path: /pythonPKG/ 关于numpy, pandas, matplotlib/seaborn 的使用.
 
 path: txtBlog/data/Math/
 
+**奇异矩阵**
+- 如果矩阵不可逆，则称它为 奇异(singular) 或 退化(degenerate) 矩阵。
+- 如果某个矩阵的一列可以表示为其他列的线性组合，则该矩阵是奇异矩阵。
+
+**矩阵的范数**
+- 常用的1阶和2阶范数，后者就是欧式距离
+- 也可以自定义，凡是就是把向量转换为标量值。
+
+
+
+### 矩阵导数 //todo
+
 
 
 
 ## 3. 概率论
 
+概率论的几个准则，要像代数里的公理一样对待并牢记。
+- 0 <= P(X) <= 1
+- P(A) + P(A_bar) =1
+- P(A or B) = P(A) + P(B) - P(A and B)
+
+
+
+**事件独立**: 定义 A和B独立，就是B的发生不影响A，也就是 P(A|B)=P(A)
+	* 如果A和B独立，则 P(A|B)=P(AB)/P(B) = P(A)，也就是 P(AB)=P(A)P(B)
+
+**贝叶斯公式**: 条件概率的定义 P(A|B)=P(AB)/P(B), 进一步的 P(AB)=P(A|B)P(B) = P(B|A)P(A) 得 P(A|B)=P(B|A)*P(A)/P(B) 
+
+**全概率公式**: 条件独立得到 P(A)=P(A|B)+P(A|B_bar)
+	* 更一般地 P(A)=求和(i=1, n, P(A|Bi)), 其中 i=1,...,n; Bi互相独立且Bi求并集正好是一个全集。
+
+
+
+
+
+### Naive Bayes 3 rules
+1. Bayes rule: P(Y=yi|X1,X2,...,Xn)=P(X1,X2,...,Xn|Y=yi)P(Y=yi) / 求和(k, P(X1,X2,...,Xn|Y=yk)*P(Y=yk) )
+2. conditional independence: P(X1,X2,...,Xn|Y=yk)=P(X1|Y=yk)*P(X2|Y=yk)*...*P(Xn|Y=yk); 用于分子的计算;
+3. classification rule: Ynew=argmax yi[ P(Yi)* 连乘(j, P(Xj|Y=i)) ]; 分母都一样，分子最大的分类就是预测分类。
+
+
+
 ## 4. 机器学习资源
 
-
+- [书PRML(Pattern Recognition and Machine Learning)](https://www.microsoft.com/en-us/research/people/cmbishop/#prml-book)
 
 
 

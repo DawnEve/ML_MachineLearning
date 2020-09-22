@@ -4,7 +4,7 @@ Python可视化包： matplotlib, seaborn,
 
 
 书： 
-《ython for Data Analysis, 2nd Edition》
+《python for Data Analysis, 2nd Edition》
 https://github.com/DawnEve/pydata-book
 
 

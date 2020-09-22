@@ -3,7 +3,7 @@
 ###########
 # 1. 数据输入
 setwd(choose.dir())
-data1=read.csv("NB/breast-cancer-wisconsin.txt", header = F,na.strings = NA)
+data1=read.csv("data/breast-cancer-wisconsin.txt", header = F,na.strings = NA)
 #去掉第一列id
 data1=data1[,-1]
 #减去V7为?的行
