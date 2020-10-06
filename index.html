@@ -1,0 +1,369 @@
+<body><title>Markdown Viewer(simple) v0.2</title><link rel="stylesheet" type="text/css" href="http://blog.dawneve.cc/public/css/MarkDown3.css">
+<style>
+body,h1{ margin:0; padding:0;}
+h1.title{background:white; color:#ddd; font-size:15px;margin-bottom:10px; text-align: center;}
+h1.title p{color:#ff9600; background:#FFECD0; margin:0 auto; width:250px; 
+	border-bottom-left-radius:5px;
+	border-bottom-right-radius:5px;
+}
+.content,
+.markdown{ width:80%; margin:10px auto; padding:10px 20px; border-radius:20px; background:#fff;}
+body{background:#eee;}
+.footer{ width:100%; height:20px; background:black; color:white; text-align:center;
+	padding:20px 0; margin-top:10px; overflow:hidden;}
+.footer a{color:#ff9600;}
+
+.content {
+    font-size: 14px;
+    color: #333;
+    line-height: 1.75;
+
+    font-family: "MicroSoft YaHei","Courier New","Andale Mono",monospace;
+}
+.content a .text_menu {
+    color: #eee;
+}
+.content a .text_menu span {
+    color: #009a61 /*#009a61 DB784D */;
+}
+.content a {
+    color: #0593d3;
+    text-decoration: none;
+}
+/* 段落前空几格 */
+.indent_1{text-indent: 0em;}
+.indent_2{text-indent: 2em;}
+.indent_3{text-indent: 4em;}
+.indent_4{text-indent: 6em;}
+.indent_5{text-indent: 8em;}
+.indent_6{text-indent: 10em;}
+
+</style>
+<h1 class=title><p>Markdown Viewer(simple)</p> file path: G:\ML_MachineLearning\ReadMe.md</h1><div class=markdown>
+<h1>Machine Learning with Python and R (造轮子+用轮子)</h1>
+<p>Note: Python and R code is edited with Jupyter Notebook.<br>
+<a href="https://github.com/DawnEve/ML_MachineLearning">My github</a></p>
+<h1>第0章 模型的选择</h1>
+<pre><code>2. EM算法：https://www.zhihu.com/question/27976634
+
+
+1. 马尔可夫模型 todo
+
+-https://www.cnblogs.com/baiboy/p/hmm1.html
+-举例法经典HMM扫盲帖：时间序列(七): 高冷贵族: 隐马尔可夫模型 &lt; 原创： Pegasus  夏洛克AIOps  2017-08-24
+-有一点算是MM：捉迷藏 | HMM 隐马尔科夫链 &lt; Math &amp; Lucy  伴露  2016-06-13
+</code></pre>
+<h2>1. k fold cross validation //todo</h2>
+<h2>2. ROC 曲线 //todo</h2>
+<p>AUC 是曲线下面积</p>
+<h1>第一章 有监督的分类</h1>
+<h2>1. KNN (K-近邻)</h2>
+<p>数据集： <a href="http://archive.ics.uci.edu/ml/index.php">http://archive.ics.uci.edu/ml/index.php</a></p>
+<h2>2. Tree &amp; RF (决策树)</h2>
+<p>主要算法: ID3, C4.5, CART;</p>
+<p>(1) 基于R</p>
+<p>干货 | 基于R语言和SPSS的决策树算法介绍及应用</p>
+<p>moojnn  大数据魔镜  2015-11-06</p>
+<p>(2) 基于Py</p>
+<p>ID3 无法直接处理数值型的feature。 CART 是不是更好呢？</p>
+<h2>3. NB: naive bayes (朴素贝叶斯)</h2>
+<p>(2) py版的 NaiveBayes: 离散型、连续型 NB/Naive_bayes.ipynb</p>
+<h2>4. LR: Logistic Regression(逻辑斯蒂回归)</h2>
+<p>[ROC曲线]How to Perform a Logistic Regression in R</p>
+<p><a href="https://datascienceplus.com/perform-logistic-regression-in-r/">https://datascienceplus.com/perform-logistic-regression-in-r/</a></p>
+<p>[分数据]Simple Guide to Logistic Regression in R</p>
+<p><a href="https://www.analyticsvidhya.com/blog/2015/11/beginners-guide-on-logistic-regression-in-r/">https://www.analyticsvidhya.com/blog/2015/11/beginners-guide-on-logistic-regression-in-r/</a></p>
+<p>(2) py 实现 logistic/LR_demo.ipynb</p>
+<p>梯度上升 -&gt; 随机梯度上升(占用更少的计算资源)</p>
+<h2>5. SVM (支持向量机)</h2>
+<p>pluskid 的SVM系列教程 <a href="http://blog.pluskid.org/?page_id=683">http://blog.pluskid.org/?page_id=683</a></p>
+<p>(1)支持向量机通俗导论（理解SVM的三层境界） <a href="https://blog.csdn.net/v_july_v/article/details/7624837">https://blog.csdn.net/v_july_v/article/details/7624837</a></p>
+<p>(2)<a href="http://scikit-learn.org/stable/modules/svm.html">http://scikit-learn.org/stable/modules/svm.html</a></p>
+<p><a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html">http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html</a></p>
+<p>Spark机器学习系列之13：支持向量机SVM（Python） <a href="https://blog.csdn.net/qq_34531825/article/details/52881804">https://blog.csdn.net/qq_34531825/article/details/52881804</a></p>
+<h3>核函数</h3>
+<p>(3)核函数是SVM的力量之源！</p>
+<p>核函数需要花时间研究，也是创新点。<br>
+<a href="https://blog.csdn.net/qq_34531825/article/details/52895621">https://blog.csdn.net/qq_34531825/article/details/52895621</a></p>
+<p>机器学习--SVM（支持向量机）核函数原理以及高斯核函数 <a href="https://blog.csdn.net/wenqiwenqi123/article/details/79313876">https://blog.csdn.net/wenqiwenqi123/article/details/79313876</a></p>
+<p>引入核函数后的损失函数 <a href="https://blog.csdn.net/wenqiwenqi123/article/details/79314166">https://blog.csdn.net/wenqiwenqi123/article/details/79314166</a></p>
+<p>(4)String Kernel SVM</p>
+<p><a href="https://www.cnblogs.com/emanlee/archive/2011/12/07/2278830.html">https://www.cnblogs.com/emanlee/archive/2011/12/07/2278830.html</a></p>
+<p>(5)代码 Understanding Support Vector Machine algorithm from examples (along with code)</p>
+<p><a href="https://www.analyticsvidhya.com/blog/2017/09/understaing-support-vector-machine-example-code/">https://www.analyticsvidhya.com/blog/2017/09/understaing-support-vector-machine-example-code/</a></p>
+<h2>6. 集成学习</h2>
+<h3>adaBoost (adaptive boosting)</h3>
+<p>path: /adaBoost/adaBoost_demo.ipynb<br>
+使用书上数据效果还行。<br>
+使用 iris 数据效果很不好，正确率 50% ，感觉就是在瞎猜。</p>
+<h4>非均衡分类问题</h4>
+<h1>第二章 回归预测</h1>
+<p>判别的目标是离散的。<br>
+回归的目标是连续的。</p>
+<h2>1. 数值型回归: 回归 //todo</h2>
+<p>path: /regression/linear_lm_demo.ipynb</p>
+<h3>岭回归</h3>
+<h3>lasso</h3>
+<h3>前向逐步回归</h3>
+<h2>2. 树回归 //todo</h2>
+<h1>第三章 无监督学习</h1>
+<h2>1. K-means (K均值聚类) //todo</h2>
+<h1>第四章 降维技术</h1>
+<h2>1. PCA //todo</h2>
+<h2>2. 利用 SVD 简化数据</h2>
+<h2>3. t-SNE 算法</h2>
+<p>path: /t-SNE/</p>
+<p>python实现</p>
+<p>R实现</p>
+<h2>4. UMAP //todo</h2>
+<h1>第五章 Neural network (神经网络)</h1>
+<h2>1. ANN / CNN</h2>
+<p>手写数字识别</p>
+<h1>附录A 其他工具</h1>
+<h2>1. MapReduce //todo</h2>
+<h2>2. 线性代数与python3</h2>
+<p>path: /pythonPKG/ 关于numpy, pandas, matplotlib/seaborn 的使用.</p>
+<p>path: txtBlog/data/Math/</p>
+<p><strong>奇异矩阵</strong></p>
+<ul>
+<li>如果矩阵不可逆，则称它为 奇异(singular) 或 退化(degenerate) 矩阵。</li>
+<li>如果某个矩阵的一列可以表示为其他列的线性组合，则该矩阵是奇异矩阵。</li>
+</ul>
+<p><strong>矩阵的范数</strong></p>
+<ul>
+<li>常用的1阶和2阶范数，后者就是欧式距离</li>
+<li>也可以自定义，凡是就是把向量转换为标量值。</li>
+</ul>
+<h3>矩阵导数 //todo</h3>
+<h2>3. 概率论</h2>
+<p>概率论的几个准则，要像代数里的公理一样对待并牢记。</p>
+<ul>
+<li>0 &lt;= P(X) &lt;= 1</li>
+<li>P(A) + P(A_bar) =1</li>
+<li>P(A or B) = P(A) + P(B) - P(A and B)</li>
+</ul>
+<p><strong>事件独立</strong>: 定义 A和B独立，就是B的发生不影响A，也就是 P(A|B)=P(A)</p>
+<pre><code>* 如果A和B独立，则 P(A|B)=P(AB)/P(B) = P(A)，也就是 P(AB)=P(A)P(B)
+</code></pre>
+<p><strong>贝叶斯公式</strong>: 条件概率的定义 P(A|B)=P(AB)/P(B), 进一步的 P(AB)=P(A|B)P(B) = P(B|A)P(A) 得 P(A|B)=P(B|A)*P(A)/P(B)</p>
+<p><strong>全概率公式</strong>: 条件独立得到 P(A)=P(A|B)+P(A|B_bar)</p>
+<pre><code>* 更一般地 P(A)=求和(i=1, n, P(A|Bi)), 其中 i=1,...,n; Bi互相独立且Bi求并集正好是一个全集。
+</code></pre>
+<h3>Naive Bayes 3 rules</h3>
+<ol>
+<li>Bayes rule: P(Y=yi|X1,X2,...,Xn)=P(X1,X2,...,Xn|Y=yi)P(Y=yi) / 求和(k, P(X1,X2,...,Xn|Y=yk)*P(Y=yk) )</li>
+<li>conditional independence: P(X1,X2,...,Xn|Y=yk)=P(X1|Y=yk)<em>P(X2|Y=yk)</em>...*P(Xn|Y=yk); 用于分子的计算;</li>
+<li>classification rule: Ynew=argmax yi[ P(Yi)* 连乘(j, P(Xj|Y=i)) ]; 分母都一样，分子最大的分类就是预测分类。</li>
+</ol>
+<h2>4. 机器学习资源</h2>
+<ul>
+<li><a href="https://www.microsoft.com/en-us/research/people/cmbishop/#prml-book">书PRML(Pattern Recognition and Machine Learning)</a></li>
+</ul>
+<h1>附录B 数据集</h1>
+<h2>1. 数据集 data/breast-cancer-wisconsin.txt <a href="https://archive.ics.uci.edu/ml/index.php">link</a></h2>
+<p><a href="https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/breast-cancer-wisconsin.data">breast-cancer-wisconsin.data</a> |<br>
+<a href="https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/breast-cancer-wisconsin.names">breast-cancer-wisconsin.names</a></p>
+<table>
+<thead><tr>
+<th>Attribute</th>
+<th style="text-align:center">Domain</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Sample code number</td>
+<td style="text-align:center">id number</td>
+</tr>
+<tr>
+<td>2. Clump Thickness</td>
+<td style="text-align:center">1 - 10 肿块密度</td>
+</tr>
+<tr>
+<td>3. Uniformity of Cell Size</td>
+<td style="text-align:center">1 - 10 细胞大小均一性</td>
+</tr>
+<tr>
+<td>4. Uniformity of Cell Shape</td>
+<td style="text-align:center">1 - 10 细胞形状均一性</td>
+</tr>
+<tr>
+<td>5. Marginal Adhesion</td>
+<td style="text-align:center">1 - 10 边界粘附</td>
+</tr>
+<tr>
+<td>6. Single Epithelial Cell Size</td>
+<td style="text-align:center">1 - 10 单个上皮细胞大小</td>
+</tr>
+<tr>
+<td>7. Bare Nuclei</td>
+<td style="text-align:center">1 - 10 裸核</td>
+</tr>
+<tr>
+<td>8. Bland Chromatin</td>
+<td style="text-align:center">1 - 10 微受激染色质</td>
+</tr>
+<tr>
+<td>9. Normal Nucleoli</td>
+<td style="text-align:center">1 - 10 正常核</td>
+</tr>
+<tr>
+<td>10. Mitoses</td>
+<td style="text-align:center">1 - 10 有丝分裂</td>
+</tr>
+<tr>
+<td>11. Class:</td>
+<td style="text-align:center">(2 for benign良性, 4 for malignant恶性)</td>
+</tr>
+</tbody>
+</table>
+<p>除掉id列，一个9个输入属性，和一个Class肿瘤判定结果。</p>
+<h2>2. Horse Colic Data Set(可用于分类, 有缺失值)  <a href="https://archive.ics.uci.edu/ml/datasets/Horse+Colic">link</a></h2>
+<p>logistic 回归: 从疝气病预测病马的死亡率 (斧头书chapter5.3, P85)</p>
+<h2>3. iris data</h2>
+<p>150行4列特征1列分类。共3类鸢尾花。</p>
+<p>来自R语言内置数据集。</p>
+</div>
+
+<div class=footer> End of this file | 
+	<a target="_blank" href="https://github.com/DawnEve/bioToolKit">Repo</a>
+</div>
+</body>
+<script>
+//通过id获取dom
+function $(o){
+	if(typeof o=="object") return o;
+	return document.getElementById(o);
+}
+
+
+//给obj增加事件的自定义函数：兼容IE/chrome/ff
+function addEvent(obj,ev,fn){
+	if(obj.addEventListener){
+		//ff:addEventListener
+		obj.addEventListener(ev,fn,false);
+	}else{
+		//IE:attachEvent
+		obj.attachEvent('on'+ev,fn);
+	}
+}
+
+
+/** 返回创建的dom元素
+* 只有第一个参数是必须的。
+* 其余2个参数可选。
+*/
+function createElement(tag, json, innerHTML){
+	var json=json||{};
+	var dom=document.createElement(tag);
+	
+	if(json!=undefined){
+		for(var key in json){
+			dom.setAttribute(key,json[key]);
+		}
+	}
+	
+	if(innerHTML!=undefined){
+		dom.innerHTML=innerHTML;
+	}
+	return dom;
+}
+
+
+/* 使用的异步，使url中的锚点能在页面中(使用带name的a空标签)正确定位，而不是向下偏移。
+* 测试：刷新和输入url都能准确定位，上面有js生成的长度不定的dom，依旧能准确定位。
+* version 0.2 抽象成函数，在onload中调用; 要在js生成dom后调用;
+*/
+function locateURLAnchor(){
+	var url = window.location.toString();//获取url
+    var id = url.split("#")[1];//获取url#后的部分
+	//如果链接含有锚点，则定位；否则啥也不做；
+    if(id){
+		//定位锚点所在的a标签，遍历获得该dom对象
+        var aA=document.querySelectorAll("a[name]");
+		for(var i=0;i<aA.length;i++){
+			if(id==aA[i].name)
+				break;
+		}
+		//console.log("id=",id,"; i=",i)
+		if(i<aA.length){
+			//aA[i].scrollIntoView(true)//放这里就不行
+			//console.log("01 before setTimeout i=",i, aA[i].offsetTop)
+			setTimeout(function(){
+				//console.log("02 after setTimeout offsetTop", aA[i].offsetTop)
+				//异步的代码总是最后才执行
+				wjl=aA[i]
+				//aA[i].scrollIntoView(true)//放这里就好使，可能会闪一下
+				window.scroll(0, aA[i].offsetTop);//换更兼容的方法
+			}, 0)
+		}
+    }
+}
+
+//======================
+/**
+* name: 为顶部生成目录
+* version: 0.1
+* version: 0.2 修正点击锚点错位一行的问题
+* version: 0.3 修正目录计数，都从1开始；准确定位URL中锚点位置；
+*
+*/
+function addContents(){
+	var oMd=document.getElementsByClassName("markdown")[0],
+		aH=oMd.querySelectorAll("h1,h2,h3,h4,h5,h6"),
+		oUl=createElement('ol');
+
+	//创建content
+	oContent=createElement('div',{'class':"content"},"")
+	oMd.parentElement.insertBefore(oContent, oMd) //加入文档流
+
+	//1. add "目录"
+	oContent.append(createElement('h2',{},'Contents' ))
+		
+	for(var i=0;i<aH.length;i++){
+		var j=i+1;
+		var oH=aH[i],
+			text=oH.innerText,  //"5.启动nginx"
+			tagName=oH.tagName;  //"H3"
+		var indentNum='indent_'+ tagName.replace("H",''); //标题缩进行数
+		
+		if(text.trim()!=""){
+			// if h tag is empty, do nothing
+			//1. add anchor
+			//console.log(i,tagName, text,  aH[i])
+			//oH.parentNode.insertBefore( createElement('p',{}, ''), oH);//占位置
+			oH.parentNode.insertBefore( createElement('a',{'name':j,
+				'my-data':'anchor',
+				'style':"margin-top:-1px; padding-top:1px; border:1px solid rgba(0,0,0,0.0);"
+			},), oH ); //h前添加锚点,无显示
+			
+			//2. show in the contents
+			var innerSpan = createElement('span',{},text );
+			var innerLi = createElement('li',{'class':'text_menu '+indentNum} );
+			// 添加点击锚点
+			var innerA = createElement('a',{'href':'#'+j, 'title':tagName+": "+text}); //鼠标悬停提示文字
+			// 装载锚点 
+			innerLi.appendChild(innerSpan);
+			innerA.appendChild(innerLi);
+			oUl.appendChild( innerA );
+		}
+	}
+	//2. add contents
+	oContent.append( oUl); //加入文档流
+	
+	//3.加入左下角菜单中
+	//$("f_content").getElementsByTagName("div")[0].append( oUl.cloneNode(true) );
+	// 复制节点 https://blog.csdn.net/LLL_liuhui/article/details/79978487
+	
+	//3. add "正文"
+	//oContent.append( createElement('h2',{},'正文' )); //加入文档流
+}
+
+// 挂载函数到load事件
+addEvent(window, 'load', function(){
+	addContents();
+	locateURLAnchor();//定位URL中的锚点
+});
+
+
+
+</script>
