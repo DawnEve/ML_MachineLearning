@@ -89,6 +89,9 @@ ID3 无法直接处理数值型的feature。 CART 是不是更好呢？
 
 ## 4. LR: Logistic Regression(逻辑斯蒂回归)
 
+
+(1) R 实现 logistic/risk_factor_Nomogram.R.ipynb
+
 [ROC曲线]How to Perform a Logistic Regression in R
 
 https://datascienceplus.com/perform-logistic-regression-in-r/
@@ -97,6 +100,9 @@ https://datascienceplus.com/perform-logistic-regression-in-r/
 [分数据]Simple Guide to Logistic Regression in R
 
 https://www.analyticsvidhya.com/blog/2015/11/beginners-guide-on-logistic-regression-in-r/
+
+
+
 
 
 (2) py 实现 logistic/LR_demo.ipynb
@@ -402,3 +408,7 @@ logistic 回归: 从疝气病预测病马的死亡率 (斧头书chapter5.3, P85)
 
 
 
+
+## 4. titanic data
+
+https://www.kaggle.com/c/titanic
