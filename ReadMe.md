@@ -4,6 +4,11 @@ Note: Python and R code is edited with Jupyter Notebook.
 [My github](https://github.com/DawnEve/ML_MachineLearning)
 
 
+```
+$ python bioToolKit\Python\markdownReader.py
+$ curl http://localhost:8008 > index.html
+
+```
 
 
 # 第0章 模型的选择
