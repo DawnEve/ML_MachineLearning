@@ -5,9 +5,11 @@ Note: Python and R code is edited with Jupyter Notebook.
 
 
 ```
+Jupyteer主要是在 linux 上运行，然后下载html。
+
+$ cd G:\xampp\htdocs\
 $ python bioToolKit\Python\markdownReader.py
 $ curl http://localhost:8008 > index.html
-
 ```
 
 
@@ -47,7 +49,13 @@ AUC 是曲线下面积
 ## 1. KNN (K-近邻)
 数据集： http://archive.ics.uci.edu/ml/index.php
 
+(1) KNN py 的示例实现 
+- KNN_manual.py.html # 比sklean包慢了10倍。
+- KNN_sklearn.html
 
+结论: 
+- 使用包更快
+- KNN 只有一个参数 K，还可以优化 距离公式。
 
 
 

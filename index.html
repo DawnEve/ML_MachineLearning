@@ -1,6 +1,4 @@
-<body>
-<meta charset="utf-8">
-<title>Markdown Viewer(simple) v0.2</title><link rel="stylesheet" type="text/css" href="static/css/MarkDown3.css">
+<body><meta charset="utf-8"><title>Markdown Viewer(simple) v0.2</title><link rel="stylesheet" type="text/css" href="http://blog.dawneve.cc/public/css/MarkDown3.css">
 <style>
 body,h1{ margin:0; padding:0;}
 h1.title{background:white; color:#ddd; font-size:15px;margin-bottom:10px; text-align: center;}
@@ -45,7 +43,10 @@ body{background:#eee;}
 <h1>Machine Learning with Python and R (造轮子+用轮子)</h1>
 <p>Note: Python and R code is edited with Jupyter Notebook.<br>
 <a href="https://github.com/DawnEve/ML_MachineLearning">My github</a></p>
-<pre><code>$ python bioToolKit\Python\markdownReader.py
+<pre><code>Jupyteer主要是在 linux 上运行，然后下载html。
+
+$ cd G:\xampp\htdocs\
+$ python bioToolKit\Python\markdownReader.py
 $ curl http://localhost:8008 &gt; index.html
 </code></pre>
 <h1>第0章 模型的选择</h1>
@@ -64,6 +65,16 @@ $ curl http://localhost:8008 &gt; index.html
 <h1>第一章 有监督的分类</h1>
 <h2>1. KNN (K-近邻)</h2>
 <p>数据集： <a href="http://archive.ics.uci.edu/ml/index.php">http://archive.ics.uci.edu/ml/index.php</a></p>
+<p>(1) KNN py 的示例实现</p>
+<ul>
+<li>KNN_manual.py.html # 比sklean包慢了10倍。</li>
+<li>KNN_sklearn.html</li>
+</ul>
+<p>结论:</p>
+<ul>
+<li>使用包更快</li>
+<li>KNN 只有一个参数 K，还可以优化 距离公式。</li>
+</ul>
 <h2>2. Tree &amp; RF (决策树)</h2>
 <p>主要算法: ID3, C4.5, CART;</p>
 <p>(1) 基于R</p>
