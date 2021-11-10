@@ -5,7 +5,7 @@ Note: Python and R code is edited with Jupyter Notebook.
 
 
 ```
-Jupyteer主要是在 linux 上运行，然后下载html。
+Jupyter Notebook 主要是在 linux 上运行，然后下载html。
 
 $ cd G:\xampp\htdocs\
 $ python bioToolKit\Python\markdownReader.py
@@ -50,8 +50,8 @@ AUC 是曲线下面积
 数据集： http://archive.ics.uci.edu/ml/index.php
 
 (1) KNN py 的示例实现 
-- KNN_manual.py.html # 比sklean包慢了10倍。
-- KNN_sklearn.html
+- [KNN_manual.py.html](/KNN/KNN_manual.py.html) # 比sklean包慢了10倍。
+- [KNN_sklearn.html](/KNN/KNN_sklearn.html)
 
 结论: 
 - 使用包更快
@@ -59,7 +59,10 @@ AUC 是曲线下面积
 
 
 
+## 线性模型 lm 与 广义线性模型 glm
 
+/LM/
+- [sklearn_glm.html](/LM/sklearn_glm.html)
 
 
 
@@ -321,9 +324,9 @@ R实现
 
 ## 1. MapReduce //todo
 
-## 2. 线性代数与python3
+## 2. 线性代数与python 数据分析包
 
-path: /pythonPKG/ 关于numpy, pandas, matplotlib/seaborn 的使用.
+path: [/pythonPKG/ 关于numpy, pandas, matplotlib/seaborn 的使用](/pythonPKG/).
 
 path: txtBlog/data/Math/
 

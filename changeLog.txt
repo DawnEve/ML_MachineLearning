@@ -28,7 +28,60 @@ v0.2.0 fix spell
 v0.2.1 update index.html [2021.4.14]
 v0.2.2 plan to rm ipynb file, use html later [2021.9.24]
 v0.2.3 nb2html: KNN, NumPy; add sklearn KNN; [2021.11.6]
+v0.2.4 KNN 的css独立文件; add 线性模型 lm; [2021.11.10]
+	<link rel="stylesheet" type="text/css" href="/static/css/md_notebook.css" /> # for Ubuntu
+	<link rel="stylesheet" type="text/css" href="/static/css/md_notebook-win10.css" /> # for win10
 #
 ## commit 
 ## -------> push
 
+
+
+
+
+
+
+
+
+########################
+首页 ReadMe.md -> index.html 更新流程
+0. notebook 写过程，重跑完善后，下载html。
+
+1. 更新首页 md ，并转为 html
+$ cd G:\xampp\htdocs\
+$ python bioToolKit\Python\markdownReader.py
+浏览器预览md文件。可以在md中添加相对地址，但是这个页面无法打开这些相对地址。
+http://localhost:8008/
+
+md2html:
+$ curl http://localhost:8008 > index.html
+
+
+2. 开启本地http服务，预览相对地址链接
+$ python -m http.server 8900
+浏览器预览静态html文件。这和通用URL看到的一样。有异常调整。
+http://localhost:8900/
+
+
+3. 提交修改。
+########################
+
+
+
+########################
+其他页面更新流程
+1. notebook 页面，File - download as - html or html with TOC;
+2. 去掉前面的css，加入外部css文件。
+3. 图片都是内置的，但都很难带上目录。 //todo
+4. 添加到首页 /index.hmtl
+
+
+(1) Y station 生成的: 大，无3d边；
+jupyter-core 4.9.1
+Y station:	<link rel="stylesheet" type="text/css" href="/static/css/md_notebook.css" />
+
+
+(2) win10 生成的: 小，有3d边;
+jupyter-core 4.4.0
+win10: <link rel="stylesheet" type="text/css" href="/static/css/md_notebook-win10.css" />
+########################
