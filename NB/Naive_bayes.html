@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" />
+<title>Naive_bayes</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+<!-- Custom stylesheet, it must be in the same directory as the html file -->
+<link rel="stylesheet" href="/static/css/md_notebook-win10.css">
+
+<!-- Loading mathjax macro -->
+<!-- Load mathjax -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_HTML"></script>
+    <!-- MathJax configuration -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+            processEscapes: true,
+            processEnvironments: true
+        },
+        // Center justify equations in code and markdown cells. Elsewhere
+        // we use CSS to left justify single line equations in code cells.
+        displayAlign: 'center',
+        "HTML-CSS": {
+            styles: {'.MathJax_Display': {"margin": 0}},
+            linebreaks: { automatic: true }
+        }
+    });
+    </script>
+    <!-- End of mathjax configuration --></head>
+<body>
+  <div tabindex="-1" id="notebook" class="border-box-sizing">
+    <div class="container" id="notebook-container">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>show the code of naive bayes</p>
+<p>贝叶斯就是把无法计算的概率，转化为容易计算的概率，然后算出来的过程。中间需要一些假设，而且即使这些假设不成立，分类效果依旧很好。</p>
+<ul>
+<li><p>离散型数据</p>
+</li>
+<li><p>连续型数据</p>
+</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Naive-bayes---&#31163;&#25955;&#22411;&#25968;&#25454;&#65288;&#22403;&#22334;&#37038;&#20214;&#20998;&#31867;&#27169;&#22411;&#65289;">Naive bayes - &#31163;&#25955;&#22411;&#25968;&#25454;&#65288;&#22403;&#22334;&#37038;&#20214;&#20998;&#31867;&#27169;&#22411;&#65289;<a class="anchor-link" href="#Naive-bayes---&#31163;&#25955;&#22411;&#25968;&#25454;&#65288;&#22403;&#22334;&#37038;&#20214;&#20998;&#31867;&#27169;&#22411;&#65289;">&#182;</a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>本例是一个帖子分类问题。输入评论的句子，判断帖子是否有侮辱性。--&gt; 再复杂点就是垃圾邮件分类。</p>
+<p>对于单词的统计有2种策略，1是只统计有无出现，2是统计出现的次数。</p>
+<ul>
+<li><p>从文本，构建文本所有单词列表。</p>
+</li>
+<li><p>然后构建每个文本中是否出现该单词，1出现，0没有出现。</p>
+</li>
+<li><p>计算每个单词出现的频率: w表示词向量， ci表示帖子分类</p>
+</li>
+<li><p>训练模型就是计算每个分类下，每个单词的频率。</p>
+</li>
+<li><p>测试模型，就是输入单词次数，使用计算好的各个分类下的单词频率，计算频率最高的分类</p>
+</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="get-data">get data<a class="anchor-link" href="#get-data">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>
+<span class="k">def</span> <span class="nf">loadDataSet</span><span class="p">():</span>
+    <span class="n">postingList</span><span class="o">=</span><span class="p">[</span>
+        <span class="s1">&#39;my dog has flea problems help please&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;mybe not take him to dog park stupid&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;my dalmation is so cute I love him&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;stop posting stupid worthless garbage&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;mr licks ate my steak how to stop him&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;quit buying worthless dog food stupid&#39;</span>
+    <span class="p">]</span>
+    <span class="n">classVec</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="c1">#是否有侮辱性词汇，1有，0没；</span>
+    <span class="n">postingList2</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">postingList</span><span class="p">:</span>
+        <span class="n">postingList2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="n">s</span><span class="p">)</span> <span class="p">)</span>
+    <span class="k">return</span> <span class="n">postingList2</span><span class="p">,</span> <span class="n">classVec</span>
+<span class="c1"># test</span>
+<span class="n">loadDataSet</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[1]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>([[&#39;my&#39;, &#39;dog&#39;, &#39;has&#39;, &#39;flea&#39;, &#39;problems&#39;, &#39;help&#39;, &#39;please&#39;],
+  [&#39;mybe&#39;, &#39;not&#39;, &#39;take&#39;, &#39;him&#39;, &#39;to&#39;, &#39;dog&#39;, &#39;park&#39;, &#39;stupid&#39;],
+  [&#39;my&#39;, &#39;dalmation&#39;, &#39;is&#39;, &#39;so&#39;, &#39;cute&#39;, &#39;I&#39;, &#39;love&#39;, &#39;him&#39;],
+  [&#39;stop&#39;, &#39;posting&#39;, &#39;stupid&#39;, &#39;worthless&#39;, &#39;garbage&#39;],
+  [&#39;mr&#39;, &#39;licks&#39;, &#39;ate&#39;, &#39;my&#39;, &#39;steak&#39;, &#39;how&#39;, &#39;to&#39;, &#39;stop&#39;, &#39;him&#39;],
+  [&#39;quit&#39;, &#39;buying&#39;, &#39;worthless&#39;, &#39;dog&#39;, &#39;food&#39;, &#39;stupid&#39;]],
+ [0, 1, 0, 1, 0, 1])</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="get-word-vector">get word vector<a class="anchor-link" href="#get-word-vector">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">createVocabList</span><span class="p">(</span><span class="n">dataSet</span><span class="p">):</span>
+    <span class="n">vocabSet</span><span class="o">=</span><span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">words</span> <span class="ow">in</span> <span class="n">dataSet</span><span class="p">:</span>
+        <span class="n">vocabSet</span><span class="o">=</span><span class="n">vocabSet</span> <span class="o">|</span> <span class="nb">set</span><span class="p">(</span><span class="n">words</span><span class="p">)</span> <span class="c1"># 求并集</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">vocabSet</span><span class="p">)</span> <span class="c1">#集合 to list</span>
+
+<span class="k">def</span> <span class="nf">setOfWords2Vec</span><span class="p">(</span><span class="n">vocabList</span><span class="p">,</span> <span class="n">inputSet</span><span class="p">):</span>
+    <span class="n">rsVect</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">vocabList</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">inputSet</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">vocabList</span><span class="p">:</span>
+            <span class="n">rsVect</span><span class="p">[</span><span class="n">vocabList</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">word</span><span class="p">)]</span><span class="o">=</span><span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;the word: </span><span class="si">%s</span><span class="s1"> is not in my Vocabulary!&#39;</span> <span class="o">%</span> <span class="n">word</span><span class="p">)</span> <span class="c1">#这个应该用不到</span>
+    <span class="k">return</span> <span class="n">rsVect</span>
+
+<span class="c1"># test</span>
+<span class="n">posts</span><span class="p">,</span><span class="n">tags</span><span class="o">=</span><span class="n">loadDataSet</span><span class="p">()</span>
+<span class="n">vocabList</span><span class="o">=</span><span class="n">createVocabList</span><span class="p">(</span><span class="n">posts</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">vocabList</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[&#39;how&#39;, &#39;park&#39;, &#39;ate&#39;, &#39;buying&#39;, &#39;problems&#39;, &#39;dalmation&#39;, &#39;is&#39;, &#39;mybe&#39;, &#39;dog&#39;, &#39;not&#39;, &#39;him&#39;, &#39;posting&#39;, &#39;stop&#39;, &#39;flea&#39;, &#39;worthless&#39;, &#39;take&#39;, &#39;please&#39;, &#39;to&#39;, &#39;quit&#39;, &#39;my&#39;, &#39;so&#39;, &#39;cute&#39;, &#39;I&#39;, &#39;garbage&#39;, &#39;food&#39;, &#39;steak&#39;, &#39;licks&#39;, &#39;stupid&#39;, &#39;love&#39;, &#39;mr&#39;, &#39;has&#39;, &#39;help&#39;]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span> <span class="n">setOfWords2Vec</span><span class="p">(</span><span class="n">vocabList</span><span class="p">,</span> <span class="n">posts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span> <span class="n">setOfWords2Vec</span><span class="p">(</span><span class="n">vocabList</span><span class="p">,</span> <span class="n">posts</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]
+[0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># get word vector matrix</span>
+<span class="n">train_X</span><span class="o">=</span><span class="p">[]</span>
+<span class="k">for</span> <span class="n">post</span> <span class="ow">in</span> <span class="n">posts</span><span class="p">:</span>
+    <span class="n">train_X</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">setOfWords2Vec</span><span class="p">(</span><span class="n">vocabList</span><span class="p">,</span> <span class="n">post</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">train_X</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[[0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], [0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0], [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0]]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="get-prob-from-word-vector">get prob from word vector<a class="anchor-link" href="#get-prob-from-word-vector">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>1.由词向量，我们知道一个词是否出现在某个文档中，也知道了某个文档的分类。</p>
+<ul>
+<li>p(ci|w) = p(w|ci)*p(ci) / p(w)</li>
+<li>输入句子，判断属于什么分类 p(ci|w)的问题，就变成计算</li>
+<li>出现某个分类的概率p(ci),和该分类中某个单词的频率 p(w|ci).</li>
+</ul>
+<p>2.而计算 p(w|ci)=p(w0,w1,...,wn|ci) 就是统计该分类下，每个单词出现的概率。</p>
+<ul>
+<li>这里要使用朴素贝叶斯的假设了: 各个条件相互独立，则 </li>
+<li>p(w|ci)=p(w0,w1,...,wn|ci)=p(w0|ci)p(w1|ci)<em>...</em>p(wn|ci)</li>
+<li>这样就极大的简化了计算过程。</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="k">def</span> <span class="nf">trainNB0</span><span class="p">(</span><span class="n">train_X</span><span class="p">,</span> <span class="n">train_Y</span><span class="p">):</span>
+    <span class="n">numTrainDocs</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">train_X</span><span class="p">)</span>
+    <span class="c1"># 单词总数</span>
+    <span class="n">numWords</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">train_X</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="c1"># 1分类的百分比</span>
+    <span class="n">pAbusive</span><span class="o">=</span><span class="nb">sum</span><span class="p">(</span><span class="n">train_Y</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">numTrainDocs</span><span class="p">)</span>
+    
+    <span class="n">p0Num</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">numWords</span><span class="p">);</span> <span class="n">p1Num</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">numWords</span><span class="p">);</span>
+    <span class="n">p0Denom</span><span class="o">=</span><span class="mf">0.0</span><span class="p">;</span> <span class="n">p1Denom</span><span class="o">=</span><span class="mf">0.0</span><span class="p">;</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numTrainDocs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">train_Y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">p1Num</span> <span class="o">+=</span> <span class="n">train_X</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="c1">#该分类下，每个单词的数量</span>
+            <span class="n">p1Denom</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">train_X</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="c1">#该分类下，总单词数</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">p0Num</span> <span class="o">+=</span> <span class="n">train_X</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">p0Denom</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">train_X</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">p1Vect</span><span class="o">=</span><span class="n">p1Num</span><span class="o">/</span><span class="n">p1Denom</span><span class="p">;</span> <span class="c1"># num ro frequncy</span>
+    <span class="n">p0Vect</span><span class="o">=</span><span class="n">p0Num</span><span class="o">/</span><span class="n">p0Denom</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">p0Vect</span><span class="p">,</span> <span class="n">p1Vect</span><span class="p">,</span> <span class="n">pAbusive</span>
+<span class="c1"># test</span>
+<span class="n">pV0</span><span class="p">,</span><span class="n">pV1</span><span class="p">,</span><span class="n">pAb</span><span class="o">=</span><span class="n">trainNB0</span><span class="p">(</span><span class="n">train_X</span><span class="p">,</span> <span class="n">train_Y</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">pV0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pV1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pAb</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[0.04166667 0.         0.04166667 0.         0.04166667 0.04166667
+ 0.04166667 0.         0.04166667 0.         0.08333333 0.
+ 0.04166667 0.04166667 0.         0.         0.04166667 0.04166667
+ 0.         0.125      0.04166667 0.04166667 0.04166667 0.
+ 0.         0.04166667 0.04166667 0.         0.04166667 0.04166667
+ 0.04166667 0.04166667]
+[0.         0.05263158 0.         0.05263158 0.         0.
+ 0.         0.05263158 0.10526316 0.05263158 0.05263158 0.05263158
+ 0.05263158 0.         0.10526316 0.05263158 0.         0.05263158
+ 0.05263158 0.         0.         0.         0.         0.05263158
+ 0.05263158 0.         0.         0.15789474 0.         0.
+ 0.         0.        ]
+0.5
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="check">check<a class="anchor-link" href="#check">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># &#39;cute&#39; 在0出现1次，1出现0次</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="&#26681;&#25454;&#23454;&#38469;&#24773;&#20917;&#20462;&#25913;&#20998;&#31867;&#22120;">&#26681;&#25454;&#23454;&#38469;&#24773;&#20917;&#20462;&#25913;&#20998;&#31867;&#22120;<a class="anchor-link" href="#&#26681;&#25454;&#23454;&#38469;&#24773;&#20917;&#20462;&#25913;&#20998;&#31867;&#22120;">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li><p>不能出现零，否则相乘后都是0.</p>
+</li>
+<li><p>同时，x&gt;0时，f(x)与 f(ln(x)) 的单调性相同。所以把乘法转为取log后的加法。</p>
+</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 训练模型</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="k">def</span> <span class="nf">trainNB1</span><span class="p">(</span><span class="n">train_X</span><span class="p">,</span> <span class="n">train_Y</span><span class="p">):</span>
+    <span class="n">numTrainDocs</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">train_X</span><span class="p">)</span>
+    <span class="c1"># 单词总数</span>
+    <span class="n">numWords</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">train_X</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="c1"># 1分类的百分比</span>
+    <span class="n">pAbusive</span><span class="o">=</span><span class="nb">sum</span><span class="p">(</span><span class="n">train_Y</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">numTrainDocs</span><span class="p">)</span>
+    
+    <span class="n">p0Num</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">numWords</span><span class="p">);</span> <span class="n">p1Num</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">numWords</span><span class="p">);</span>
+    <span class="n">p0Denom</span><span class="o">=</span><span class="mf">2.0</span><span class="p">;</span> <span class="n">p1Denom</span><span class="o">=</span><span class="mf">2.0</span><span class="p">;</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numTrainDocs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">train_Y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">p1Num</span> <span class="o">+=</span> <span class="n">train_X</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="c1">#该分类下，每个单词的数量</span>
+            <span class="n">p1Denom</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">train_X</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="c1">#该分类下，总单词数</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">p0Num</span> <span class="o">+=</span> <span class="n">train_X</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">p0Denom</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">train_X</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">p1Vect</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p1Num</span><span class="o">/</span><span class="n">p1Denom</span><span class="p">)</span> <span class="c1"># num ro frequncy</span>
+    <span class="n">p0Vect</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p0Num</span><span class="o">/</span><span class="n">p0Denom</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">p0Vect</span><span class="p">,</span> <span class="n">p1Vect</span><span class="p">,</span> <span class="n">pAbusive</span>
+<span class="c1"># test</span>
+<span class="n">pV0</span><span class="p">,</span><span class="n">pV1</span><span class="p">,</span><span class="n">pAb</span><span class="o">=</span><span class="n">trainNB1</span><span class="p">(</span><span class="n">train_X</span><span class="p">,</span> <span class="n">train_Y</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pV0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pV1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pAb</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[-2.56494936 -3.25809654 -2.56494936 -3.25809654 -2.56494936 -2.56494936
+ -2.56494936 -3.25809654 -2.56494936 -3.25809654 -2.15948425 -3.25809654
+ -2.56494936 -2.56494936 -3.25809654 -3.25809654 -2.56494936 -2.56494936
+ -3.25809654 -1.87180218 -2.56494936 -2.56494936 -2.56494936 -3.25809654
+ -3.25809654 -2.56494936 -2.56494936 -3.25809654 -2.56494936 -2.56494936
+ -2.56494936 -2.56494936]
+[-3.04452244 -2.35137526 -3.04452244 -2.35137526 -3.04452244 -3.04452244
+ -3.04452244 -2.35137526 -1.94591015 -2.35137526 -2.35137526 -2.35137526
+ -2.35137526 -3.04452244 -1.94591015 -2.35137526 -3.04452244 -2.35137526
+ -2.35137526 -3.04452244 -3.04452244 -3.04452244 -3.04452244 -2.35137526
+ -2.35137526 -3.04452244 -3.04452244 -1.65822808 -3.04452244 -3.04452244
+ -3.04452244 -3.04452244]
+0.5
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="test">test<a class="anchor-link" href="#test">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">classifyNB</span><span class="p">(</span><span class="n">vec2Classify</span><span class="p">,</span> <span class="n">p0Vec</span><span class="p">,</span> <span class="n">p1Vec</span><span class="p">,</span> <span class="n">pClass1</span><span class="p">):</span>
+    <span class="n">p1</span><span class="o">=</span><span class="nb">sum</span><span class="p">(</span><span class="n">vec2Classify</span><span class="o">*</span><span class="n">p1Vec</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">pClass1</span><span class="p">)</span>
+    <span class="n">p0</span><span class="o">=</span><span class="nb">sum</span><span class="p">(</span><span class="n">vec2Classify</span><span class="o">*</span><span class="n">p0Vec</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1.0</span><span class="o">-</span><span class="n">pClass1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">p0</span><span class="p">,</span> <span class="n">p1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">p1</span><span class="o">&gt;</span><span class="n">p0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+<span class="c1"># test</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">entryPost</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;love&#39;</span><span class="p">,</span> <span class="s1">&#39;my&#39;</span><span class="p">,</span> <span class="s1">&#39;dalmation&#39;</span><span class="p">]</span>
+<span class="n">entryVect</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">setOfWords2Vec</span><span class="p">(</span><span class="n">vocabList</span><span class="p">,</span> <span class="n">entryPost</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span> <span class="n">entryVect</span> <span class="p">)</span>
+<span class="n">classifyNB</span><span class="p">(</span><span class="n">entryVect</span><span class="p">,</span> <span class="n">pV0</span><span class="p">,</span> <span class="n">pV1</span><span class="p">,</span> <span class="n">pAb</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0]
+-7.694848072384611 -9.826714493730215
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[10]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>0</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">entryPost</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;stupid&#39;</span><span class="p">,</span> <span class="s1">&#39;garbage&#39;</span><span class="p">]</span>
+<span class="n">entryVect</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">setOfWords2Vec</span><span class="p">(</span><span class="n">vocabList</span><span class="p">,</span> <span class="n">entryPost</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span> <span class="n">entryVect</span> <span class="p">)</span>
+<span class="n">classifyNB</span><span class="p">(</span><span class="n">entryVect</span><span class="p">,</span> <span class="n">pV0</span><span class="p">,</span> <span class="n">pV1</span><span class="p">,</span> <span class="n">pAb</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0]
+-7.20934025660291 -4.702750514326955
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[11]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>1</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="&#35789;&#38598;&#27169;&#22411;(&#35789;&#26159;&#21542;&#20986;&#29616;)&#65307;&#35789;&#34955;&#27169;&#22411;(&#35789;&#20986;&#29616;&#30340;&#27425;&#25968;)">&#35789;&#38598;&#27169;&#22411;(&#35789;&#26159;&#21542;&#20986;&#29616;)&#65307;&#35789;&#34955;&#27169;&#22411;(&#35789;&#20986;&#29616;&#30340;&#27425;&#25968;)<a class="anchor-link" href="#&#35789;&#38598;&#27169;&#22411;(&#35789;&#26159;&#21542;&#20986;&#29616;)&#65307;&#35789;&#34955;&#27169;&#22411;(&#35789;&#20986;&#29616;&#30340;&#27425;&#25968;)">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">bagOfWords2Vec</span><span class="p">(</span><span class="n">vocabList</span><span class="p">,</span> <span class="n">inputSet</span><span class="p">):</span>
+    <span class="n">rsVec</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">vocabList</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">inputSet</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">vocabList</span><span class="p">:</span>
+            <span class="n">rsVec</span><span class="p">[</span><span class="n">vocabList</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">word</span><span class="p">)]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">rsVec</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 训练模型</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="k">def</span> <span class="nf">trainNB2</span><span class="p">(</span><span class="n">train_X</span><span class="p">,</span> <span class="n">train_Y</span><span class="p">):</span>
+    <span class="n">numTrainDocs</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">train_X</span><span class="p">)</span>
+    <span class="c1"># 单词总数</span>
+    <span class="n">numWords</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">train_X</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="c1"># 1分类的百分比</span>
+    <span class="n">pAbusive</span><span class="o">=</span><span class="nb">sum</span><span class="p">(</span><span class="n">train_Y</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">numTrainDocs</span><span class="p">)</span>
+    
+    <span class="n">p0Num</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">numWords</span><span class="p">);</span> <span class="n">p1Num</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">numWords</span><span class="p">);</span>
+    <span class="n">p0Denom</span><span class="o">=</span><span class="mf">2.0</span><span class="p">;</span> <span class="n">p1Denom</span><span class="o">=</span><span class="mf">2.0</span><span class="p">;</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numTrainDocs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">train_Y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">p1Num</span> <span class="o">+=</span> <span class="n">train_X</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="c1">#该分类下，每个单词的数量</span>
+            <span class="n">p1Denom</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">train_X</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="c1">#该分类下，总单词数</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">p0Num</span> <span class="o">+=</span> <span class="n">train_X</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">p0Denom</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">train_X</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">p1Vect</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p1Num</span><span class="o">/</span><span class="n">p1Denom</span><span class="p">)</span> <span class="c1"># num ro frequncy</span>
+    <span class="n">p0Vect</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p0Num</span><span class="o">/</span><span class="n">p0Denom</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">p0Vect</span><span class="p">,</span> <span class="n">p1Vect</span><span class="p">,</span> <span class="n">pAbusive</span>
+<span class="c1"># test</span>
+
+<span class="c1"># get word vector matrix</span>
+<span class="n">train_X2</span><span class="o">=</span><span class="p">[]</span>
+<span class="k">for</span> <span class="n">post</span> <span class="ow">in</span> <span class="n">posts</span><span class="p">:</span>
+    <span class="n">train_X2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bagOfWords2Vec</span><span class="p">(</span><span class="n">vocabList</span><span class="p">,</span> <span class="n">post</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">train_X2</span><span class="p">)</span>
+
+
+<span class="n">pV0_2</span><span class="p">,</span><span class="n">pV1_2</span><span class="p">,</span><span class="n">pAb_2</span><span class="o">=</span><span class="n">trainNB2</span><span class="p">(</span><span class="n">train_X2</span><span class="p">,</span> <span class="n">train_Y</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pV0_2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pV1_2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pAb_2</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[[0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], [0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0], [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0]]
+[-2.56494936 -3.25809654 -2.56494936 -3.25809654 -2.56494936 -2.56494936
+ -2.56494936 -3.25809654 -2.56494936 -3.25809654 -2.15948425 -3.25809654
+ -2.56494936 -2.56494936 -3.25809654 -3.25809654 -2.56494936 -2.56494936
+ -3.25809654 -1.87180218 -2.56494936 -2.56494936 -2.56494936 -3.25809654
+ -3.25809654 -2.56494936 -2.56494936 -3.25809654 -2.56494936 -2.56494936
+ -2.56494936 -2.56494936]
+[-3.04452244 -2.35137526 -3.04452244 -2.35137526 -3.04452244 -3.04452244
+ -3.04452244 -2.35137526 -1.94591015 -2.35137526 -2.35137526 -2.35137526
+ -2.35137526 -3.04452244 -1.94591015 -2.35137526 -3.04452244 -2.35137526
+ -2.35137526 -3.04452244 -3.04452244 -3.04452244 -3.04452244 -2.35137526
+ -2.35137526 -3.04452244 -3.04452244 -1.65822808 -3.04452244 -3.04452244
+ -3.04452244 -3.04452244]
+0.5
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">entryPost</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;love&#39;</span><span class="p">,</span> <span class="s1">&#39;my&#39;</span><span class="p">,</span> <span class="s1">&#39;dalmation&#39;</span><span class="p">]</span>
+<span class="n">entryVect</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bagOfWords2Vec</span><span class="p">(</span><span class="n">vocabList</span><span class="p">,</span> <span class="n">entryPost</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span> <span class="n">entryVect</span> <span class="p">)</span>
+<span class="n">classifyNB</span><span class="p">(</span><span class="n">entryVect</span><span class="p">,</span> <span class="n">pV0_2</span><span class="p">,</span> <span class="n">pV1_2</span><span class="p">,</span> <span class="n">pAb_2</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0]
+-7.694848072384611 -9.826714493730215
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[14]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>0</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">entryPost</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;stupid&#39;</span><span class="p">,</span> <span class="s1">&#39;garbage&#39;</span><span class="p">]</span>
+<span class="n">entryVect</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bagOfWords2Vec</span><span class="p">(</span><span class="n">vocabList</span><span class="p">,</span> <span class="n">entryPost</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span> <span class="n">entryVect</span> <span class="p">)</span>
+<span class="n">classifyNB</span><span class="p">(</span><span class="n">entryVect</span><span class="p">,</span> <span class="n">pV0_2</span><span class="p">,</span> <span class="n">pV1_2</span><span class="p">,</span> <span class="n">pAb_2</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0]
+-7.20934025660291 -4.702750514326955
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[15]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>1</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<blockquote><p>接着还有多分类(n&gt;2)怎么处理?</p>
+</blockquote>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="&#36830;&#32493;&#22411;&#21464;&#37327;&#24590;&#20040;&#22788;&#29702;&#65311;">&#36830;&#32493;&#22411;&#21464;&#37327;&#24590;&#20040;&#22788;&#29702;&#65311;<a class="anchor-link" href="#&#36830;&#32493;&#22411;&#21464;&#37327;&#24590;&#20040;&#22788;&#29702;&#65311;">&#182;</a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<blockquote><p>比如iris数据是连续的，没有那么明确的分类，怎么使用贝叶斯分类呢？</p>
+<p><a href="https://blog.csdn.net/tortelee/article/details/79484735">https://blog.csdn.net/tortelee/article/details/79484735</a></p>
+<p><a href="https://blog.csdn.net/BlueBlueSkyZ/article/details/101562427">https://blog.csdn.net/BlueBlueSkyZ/article/details/101562427</a></p>
+<p><a href="http://www.ruanyifeng.com/blog/2013/12/naive_bayes_classifier.html">http://www.ruanyifeng.com/blog/2013/12/naive_bayes_classifier.html</a></p>
+</blockquote>
+
+</div>
+</div>
+</div>
+<pre>   性别　　身高（英尺）　体重（磅）　　脚掌（英寸）
+　　男 　　　6 　　　　　　180　　　　　12
+　　男 　　　5.92　　　　　190　　　　　11
+　　男 　　　5.58　　　　　170　　　　　12
+　　男 　　　5.92　　　　　165　　　　　10
+　　女 　　　5 　　　　　　100　　　　　6
+　　女 　　　5.5 　　　　　150　　　　　8
+　　女 　　　5.42　　　　　130　　　　　7
+　　女 　　　5.75　　　　　150　　　　　9
+
+已知某人身高6英尺、体重130磅，脚掌8英寸，请问该人是男是女？######
+P(ci|w)=P(w|ci)*p(ci) / p(w), 我们可以忽略掉p(w)，因为它是一个恒定的频率。
+而p(ci)很容易计算。
+根据朴素贝叶斯假设，条件都是相对独立的，p(w|ci)=p(w0|ci)p(w1|ci)p(w2|ci)...p(wn|ci)
+
+
+######
+根据概率密度函数，计算概率
+
+假设都是正态分布 X~ N(mu, sigma^2)，则需要计算正态分布的2个参数 
+
+heights=c(6,5.92,5.58,5.92)
+mean2=mean(heights);mean2 #5.855
+var2=var(heights);var2 #0.03503333
+# R
+1/sqrt(2*3.1415*0.035)*exp(-(6-5.855)^2/(2*0.035))
+
+## js
+1/Math.sqrt(2*3.1415*0.035)*Math.exp(-((6-5.855)**2)/(2*0.035)) #1.579206773964085
+</pre>
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="mf">3.1415</span><span class="o">*</span><span class="mf">0.035</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="mi">6</span><span class="o">-</span><span class="mf">5.855</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="mf">0.035</span><span class="p">))</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[16]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>1.579206773964085</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="load-data">load data<a class="anchor-link" href="#load-data">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[17]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">loadDataSet2</span><span class="p">():</span>
+    <span class="n">dataSet</span><span class="o">=</span><span class="p">[</span> <span class="c1">#列名: 身高（英尺）　体重（磅）　　脚掌（英寸）</span>
+        <span class="p">[</span><span class="mi">6</span><span class="p">,</span><span class="mi">180</span><span class="p">,</span><span class="mi">12</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">5.92</span><span class="p">,</span><span class="mi">190</span><span class="p">,</span><span class="mi">11</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">5.58</span><span class="p">,</span><span class="mi">170</span><span class="p">,</span><span class="mi">12</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">5.92</span><span class="p">,</span><span class="mi">165</span><span class="p">,</span><span class="mi">10</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">5</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">6</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">5.5</span><span class="p">,</span><span class="mi">150</span><span class="p">,</span><span class="mi">8</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">5.42</span><span class="p">,</span><span class="mi">130</span><span class="p">,</span><span class="mi">7</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">5.75</span><span class="p">,</span><span class="mi">150</span><span class="p">,</span><span class="mi">9</span><span class="p">]</span>
+    <span class="p">]</span>
+    <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="c1">#tags 1=男的; 0=女的</span>
+    <span class="k">return</span> <span class="n">dataSet</span><span class="p">,</span> <span class="n">tags</span>
+<span class="n">dataSet</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">loadDataSet2</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">dataSet</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tags</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[[6, 180, 12], [5.92, 190, 11], [5.58, 170, 12], [5.92, 165, 10], [5, 100, 6], [5.5, 150, 8], [5.42, 130, 7], [5.75, 150, 9]]
+[1, 1, 1, 1, 0, 0, 0, 0]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="get-paras:-trainBayes()">get paras: trainBayes()<a class="anchor-link" href="#get-paras:-trainBayes()">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="k">def</span> <span class="nf">trainBayes</span><span class="p">(</span><span class="n">dataSet</span><span class="p">,</span> <span class="n">tags</span><span class="p">):</span>
+    <span class="n">paras</span><span class="o">=</span><span class="p">{}</span>
+    <span class="n">uniqTag</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">tags</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;uniqTag=&#39;</span><span class="p">,</span><span class="n">uniqTag</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">uniqTag</span><span class="p">:</span>
+        <span class="n">paras</span><span class="p">[</span><span class="n">tag</span><span class="p">]</span><span class="o">=</span><span class="p">[]</span>
+        <span class="n">dataOfThisTag</span><span class="o">=</span><span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tags</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">tags</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">==</span><span class="n">tag</span><span class="p">:</span>
+                <span class="n">dataOfThisTag</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataSet</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">dataOfThisTag</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dataOfThisTag</span><span class="p">)</span>
+        <span class="c1"># cal mean, var by column</span>
+        <span class="n">paras</span><span class="p">[</span><span class="n">tag</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">dataOfThisTag</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">paras</span><span class="p">[</span><span class="n">tag</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">dataOfThisTag</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">paras</span><span class="p">[</span><span class="n">tag</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">dataOfThisTag</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">)</span>
+    <span class="k">return</span> <span class="n">paras</span>
+<span class="c1"># test</span>
+<span class="n">paras</span><span class="o">=</span><span class="n">trainBayes</span><span class="p">(</span><span class="n">dataSet</span><span class="p">,</span> <span class="n">tags</span><span class="p">)</span>
+<span class="n">paras</span>
+<span class="c1"># 女: 三列的平均值，三列的方差, 观察条目个数</span>
+<span class="c1"># 男: 三列的平均值，三列的方差, 观察条目个数</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>uniqTag= {0, 1}
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[18]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>{0: [array([  5.4175, 132.5   ,   7.5   ]),
+  array([9.72250000e-02, 5.58333333e+02, 1.66666667e+00]),
+  4],
+ 1: [array([  5.855, 176.25 ,  11.25 ]),
+  array([3.50333333e-02, 1.22916667e+02, 9.16666667e-01]),
+  4]}</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="cal-prob-for-a-new-entry">cal prob for a new entry<a class="anchor-link" href="#cal-prob-for-a-new-entry">&#182;</a></h2>
+</div>
+</div>
+</div>
+
+<pre>P(身高=6|男) x P(体重=130|男) x P(脚掌=8|男) x P(男)
+    = 6.1984 x e-9
+
+P(身高=6|女) x P(体重=130|女) x P(脚掌=8|女) x P(女)
+    = 5.3778 x e-4
+
+可以看到，女性的概率比男性要高出将近10000倍，所以判断该人为女性。
+</pre>
+
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">predictBayes</span><span class="p">(</span><span class="n">newEntry</span><span class="p">,</span> <span class="n">paras</span><span class="p">):</span>
+    <span class="n">newEntry</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">newEntry</span><span class="p">)</span>
+    <span class="n">uniqTag</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">paras</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">rsDict</span><span class="o">=</span><span class="p">{}</span>
+    <span class="n">totalbyGroup</span><span class="o">=</span><span class="p">{}</span> <span class="c1"># get pre-prob for each class</span>
+    <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">uniqTag</span><span class="p">:</span>
+        <span class="n">rsDict</span><span class="p">[</span><span class="n">tag</span><span class="p">]</span><span class="o">=</span><span class="p">[]</span>
+        <span class="n">totalbyGroup</span><span class="p">[</span><span class="n">tag</span><span class="p">]</span><span class="o">=</span><span class="n">paras</span><span class="p">[</span><span class="n">tag</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># print(tag, paras[tag])</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">paras</span><span class="p">[</span><span class="n">tag</span><span class="p">][</span><span class="mi">0</span><span class="p">])):</span>
+            <span class="n">mean1</span><span class="o">=</span><span class="n">paras</span><span class="p">[</span><span class="n">tag</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">col</span><span class="p">]</span>
+            <span class="n">var1</span><span class="o">=</span><span class="n">paras</span><span class="p">[</span><span class="n">tag</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="n">col</span><span class="p">]</span>
+            
+            <span class="n">X</span><span class="o">=</span><span class="n">newEntry</span><span class="p">[</span><span class="n">col</span><span class="p">]</span>
+            <span class="n">p</span><span class="o">=</span><span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="mf">3.1415</span><span class="o">*</span><span class="n">var1</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">X</span><span class="o">-</span><span class="n">mean1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">var1</span><span class="p">))</span>
+            <span class="n">rsDict</span><span class="p">[</span><span class="n">tag</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="c1">#</span>
+    <span class="c1">#print(rsDict)</span>
+    <span class="c1"># calc post-prob for each class</span>
+    <span class="n">postProbs</span><span class="o">=</span><span class="p">{}</span>
+    <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">uniqTag</span><span class="p">:</span>
+        <span class="n">p0</span><span class="o">=</span><span class="n">totalbyGroup</span><span class="p">[</span><span class="n">tag</span><span class="p">]</span><span class="o">/</span><span class="nb">sum</span><span class="p">(</span><span class="n">totalbyGroup</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">p</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span> <span class="n">rsDict</span><span class="p">[</span><span class="n">tag</span><span class="p">]</span> <span class="p">)</span> <span class="p">)</span> <span class="p">)</span><span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">p0</span><span class="p">))</span> <span class="c1">#np把乘法转为加法，会更方便</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+        <span class="c1"># 记录后验概率最大的p和分类，并返回p最大的分类</span>
+        <span class="k">if</span> <span class="s1">&#39;max&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">postProbs</span><span class="p">:</span>
+            <span class="n">postProbs</span><span class="p">[</span><span class="s1">&#39;max&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">p</span>
+            <span class="n">postProbs</span><span class="p">[</span><span class="s1">&#39;tag&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">tag</span>
+        <span class="k">elif</span> <span class="n">p</span><span class="o">&gt;</span><span class="n">postProbs</span><span class="p">[</span><span class="s1">&#39;max&#39;</span><span class="p">]:</span>
+            <span class="n">postProbs</span><span class="p">[</span><span class="s1">&#39;max&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">p</span>
+            <span class="n">postProbs</span><span class="p">[</span><span class="s1">&#39;tag&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">tag</span>
+    <span class="k">return</span> <span class="n">postProbs</span><span class="p">[</span><span class="s1">&#39;tag&#39;</span><span class="p">]</span>
+<span class="c1"># test</span>
+<span class="n">predictBayes</span><span class="p">([</span><span class="mi">6</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span><span class="n">paras</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>0 -7.527996461433017
+1 -18.89914470021889
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[19]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>0</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">a0</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">7.527996461433017</span><span class="p">)</span> <span class="c1">#女</span>
+<span class="n">a1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">18.89914470021889</span><span class="p">)</span> <span class="c1">#男</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">a0</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">a0</span><span class="o">/</span><span class="n">a1</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>0.0005378147104813586 6.197346005195689e-09 86781.4561314584
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="validation">validation<a class="anchor-link" href="#validation">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[21]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 数量太少了，只好用原始数据进行验证了</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[22]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">i</span><span class="o">=-</span><span class="mi">1</span>
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dataSet</span><span class="p">:</span>
+    <span class="n">i</span><span class="o">=</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span>
+    <span class="n">pred</span><span class="o">=</span><span class="n">predictBayes</span><span class="p">(</span><span class="n">item</span><span class="p">,</span><span class="n">paras</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&#39;</span><span class="p">,</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;; Pred=&#39;</span><span class="p">,</span><span class="n">pred</span><span class="p">,</span> <span class="s1">&#39;; Actual=&#39;</span><span class="p">,</span> <span class="n">tags</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">&#39;; &#39;</span><span class="p">,</span> <span class="n">pred</span><span class="o">==</span><span class="n">tags</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="c1">#</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>0 -15.542921834567345
+1 -4.800531449063267
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; [6, 180, 12] ; Pred= 1 ; Actual= 1 ;  True
+0 -13.636833095951348
+1 -4.9998969370642765
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; [5.92, 190, 11] ; Pred= 1 ; Actual= 1 ;  True
+0 -13.172573780545862
+1 -5.681484213984493
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; [5.58, 170, 12] ; Pred= 1 ; Actual= 1 ;  True
+0 -9.82190772281702
+1 -5.563841467110501
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; [5.92, 165, 10] ; Pred= 1 ; Actual= 1 ;  True
+0 -8.219747784529547
+1 -53.254230985347604
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; [5, 100, 6] ; Pred= 0 ; Actual= 0 ;  True
+0 -6.086702033597909
+1 -14.499412403294258
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; [5.5, 150, 8] ; Pred= 0 ; Actual= 0 ;  True
+0 -5.783074887763696
+1 -25.390624675999543
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; [5.42, 130, 7] ; Pred= 0 ; Actual= 0 ;  True
+0 -7.220258217706933
+1 -9.858118397585406
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; [5.75, 150, 9] ; Pred= 0 ; Actual= 0 ;  True
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="test-on-iris">test on iris<a class="anchor-link" href="#test-on-iris">&#182;</a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[23]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[23]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&#39;G:\\ML_MachineLearning\\NB&#39;</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[24]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="k">def</span> <span class="nf">loadDataSet3</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;../iris_data/iris.csv&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">iris</span><span class="o">=</span><span class="n">loadDataSet3</span><span class="p">()</span>
+<span class="n">iris</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[24]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Sepal.Length</th>
+      <th>Sepal.Width</th>
+      <th>Petal.Length</th>
+      <th>Petal.Width</th>
+      <th>Species</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>5.1</td>
+      <td>3.5</td>
+      <td>1.4</td>
+      <td>0.2</td>
+      <td>setosa</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>4.9</td>
+      <td>3.0</td>
+      <td>1.4</td>
+      <td>0.2</td>
+      <td>setosa</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4.7</td>
+      <td>3.2</td>
+      <td>1.3</td>
+      <td>0.2</td>
+      <td>setosa</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>4.6</td>
+      <td>3.1</td>
+      <td>1.5</td>
+      <td>0.2</td>
+      <td>setosa</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>5.0</td>
+      <td>3.6</td>
+      <td>1.4</td>
+      <td>0.2</td>
+      <td>setosa</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[44]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="k">def</span> <span class="nf">splitData</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">test_ratio</span><span class="p">):</span>
+    <span class="c1"># 索引范围为[0, n), 随机选x个不重复</span>
+    <span class="n">n</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">x</span><span class="o">=</span><span class="nb">round</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="n">test_ratio</span><span class="p">)</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="c1">#</span>
+    <span class="n">test_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">train_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">test_index</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">train_index</span><span class="p">,],</span><span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">test_index</span><span class="p">,]</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">train_set</span><span class="p">,</span> <span class="n">test_set</span><span class="o">=</span><span class="n">splitData</span><span class="p">(</span><span class="n">iris</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">train_set</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">test_set</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>(120, 5)
+(30, 5)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[50]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">np2vec</span><span class="p">(</span><span class="n">npArray</span><span class="p">):</span>
+    <span class="n">arrayVec</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">npArray</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">arrayVec</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">npArray</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">npArray</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span><span class="n">npArray</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span><span class="n">npArray</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">3</span><span class="p">]])</span>
+    <span class="c1">#</span>
+    <span class="n">tags2</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">npArray</span><span class="p">[</span><span class="s1">&#39;Species&#39;</span><span class="p">]:</span>
+        <span class="n">tags2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">arrayVec</span><span class="p">,</span><span class="n">tags2</span>
+<span class="c1">#test</span>
+<span class="n">trainX</span><span class="p">,</span> <span class="n">trainY</span><span class="o">=</span><span class="n">np2vec</span><span class="p">(</span><span class="n">train_set</span><span class="p">)</span>
+<span class="n">testX</span><span class="p">,</span> <span class="n">testY</span><span class="o">=</span><span class="n">np2vec</span><span class="p">(</span><span class="n">test_set</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[51]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">paras</span><span class="o">=</span><span class="n">trainBayes</span><span class="p">(</span><span class="n">trainX</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">trainY</span><span class="p">)</span>
+<span class="n">paras</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>uniqTag= {&#39;versicolor&#39;, &#39;virginica&#39;, &#39;setosa&#39;}
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[51]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>{&#39;setosa&#39;: [array([4.96153846, 3.36666667, 1.46666667, 0.23333333]),
+  array([0.11032389, 0.13385965, 0.02596491, 0.01122807]),
+  39],
+ &#39;versicolor&#39;: [array([5.94594595, 2.73243243, 4.22972973, 1.30540541]),
+  array([0.28255255, 0.10947447, 0.21936937, 0.04052553]),
+  37],
+ &#39;virginica&#39;: [array([6.525     , 2.95227273, 5.53409091, 2.02045455]),
+  array([0.39540698, 0.09418076, 0.31020613, 0.08073467]),
+  44]}</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[52]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">predictBayes</span><span class="p">([</span><span class="mf">4.9</span><span class="p">,</span> <span class="mf">3.1</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span><span class="n">paras</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>versicolor -38.21661432381203
+setosa 0.28235339339129295
+virginica -53.71715459357284
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[52]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&#39;setosa&#39;</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[59]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">i</span><span class="o">=-</span><span class="mi">1</span>
+<span class="n">rsArr</span><span class="o">=</span><span class="p">[]</span>
+<span class="n">j</span><span class="o">=</span><span class="mi">0</span>
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">testX</span><span class="p">:</span>
+    <span class="n">i</span><span class="o">=</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span>
+    <span class="n">pred</span><span class="o">=</span><span class="n">predictBayes</span><span class="p">(</span><span class="n">item</span><span class="p">,</span><span class="n">paras</span><span class="p">)</span>
+    <span class="n">rs</span><span class="o">=</span><span class="p">(</span><span class="n">pred</span><span class="o">==</span><span class="n">testY</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">rsArr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rs</span><span class="o">==</span><span class="kc">True</span><span class="p">:</span>
+        <span class="n">j</span><span class="o">+=</span><span class="mi">1</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;; Pred=&#39;</span><span class="p">,</span><span class="n">pred</span><span class="p">,</span> <span class="s1">&#39;; Actual=&#39;</span><span class="p">,</span> <span class="n">testY</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">&#39;; &#39;</span><span class="p">,</span> <span class="n">rs</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">j</span><span class="o">/</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;%&#39;</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>versicolor -44.12681589706359
+setosa -4.725057243408674
+virginica -58.4842691139446
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 0 [5.8, 4.0, 1.2, 0.2] ; Pred= setosa ; Actual= setosa ;  True 
+
+versicolor -6.23331524726756
+setosa -80.23697354330952
+virginica -20.44157443119337
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 1 [5.1, 2.5, 3.0, 1.1] ; Pred= versicolor ; Actual= versicolor ;  True 
+
+versicolor -2.01334834711614
+setosa -237.59636387441716
+virginica -5.666667398840877
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 2 [6.6, 3.0, 4.4, 1.4] ; Pred= versicolor ; Actual= versicolor ;  True 
+
+versicolor -37.18421270508493
+setosa -2.3274555821143568
+virginica -52.71759580830226
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 3 [5.4, 3.9, 1.3, 0.4] ; Pred= setosa ; Actual= setosa ;  True 
+
+versicolor -29.40310036990041
+setosa -646.109605523668
+virginica -8.607352700945972
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 4 [7.9, 3.8, 6.4, 2.0] ; Pred= virginica ; Actual= virginica ;  True 
+
+versicolor -4.0208001079355515
+setosa -291.250757714522
+virginica -4.112394673839194
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 5 [6.3, 3.3, 4.7, 1.6] ; Pred= versicolor ; Actual= versicolor ;  True 
+
+versicolor -16.911779620304813
+setosa -460.325929832495
+virginica -2.2716282172237214
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 6 [6.9, 3.1, 5.1, 2.3] ; Pred= virginica ; Actual= virginica ;  True 
+
+versicolor -29.70967746466003
+setosa -4.26305828835927
+virginica -45.1224477481749
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 7 [5.1, 3.8, 1.9, 0.4] ; Pred= setosa ; Actual= setosa ;  True 
+
+versicolor -35.33656523332123
+setosa 0.572611985453209
+virginica -51.19848902773319
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 8 [4.7, 3.2, 1.6, 0.2] ; Pred= setosa ; Actual= setosa ;  True 
+
+versicolor -20.494030134778374
+setosa -551.055960649682
+virginica -2.222214324223158
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 9 [6.9, 3.2, 5.7, 2.3] ; Pred= virginica ; Actual= virginica ;  True 
+
+versicolor -0.9718411960002352
+setosa -196.66539022178353
+virginica -8.69338570847679
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 10 [5.6, 2.7, 4.2, 1.3] ; Pred= versicolor ; Actual= versicolor ;  True 
+
+versicolor -32.20679997407876
+setosa -2.840969095627875
+virginica -47.515776108518644
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 11 [5.4, 3.9, 1.7, 0.4] ; Pred= setosa ; Actual= setosa ;  True 
+
+versicolor -17.585265145646748
+setosa -553.4969291329096
+virginica -1.875424229112653
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 12 [7.1, 3.0, 5.9, 2.1] ; Pred= virginica ; Actual= virginica ;  True 
+
+versicolor -2.7498929609395093
+setosa -256.7347481527813
+virginica -4.936968939002526
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 13 [6.4, 3.2, 4.5, 1.5] ; Pred= versicolor ; Actual= versicolor ;  True 
+
+versicolor -1.51998631771603
+setosa -252.95417148174593
+virginica -4.954447188880095
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 14 [6.0, 2.9, 4.5, 1.5] ; Pred= versicolor ; Actual= versicolor ;  True 
+
+versicolor -40.62014736000626
+setosa -0.7390381509216919
+virginica -56.6466648556547
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 15 [4.4, 3.2, 1.3, 0.2] ; Pred= setosa ; Actual= setosa ;  True 
+
+versicolor -1.128043327160095
+setosa -169.2010211660469
+virginica -10.475953236298665
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 16 [5.8, 2.6, 4.0, 1.2] ; Pred= versicolor ; Actual= versicolor ;  True 
+
+versicolor -1.9253351799537741
+setosa -249.60290018423612
+virginica -5.685455590035668
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 17 [5.6, 3.0, 4.5, 1.5] ; Pred= versicolor ; Actual= versicolor ;  True 
+
+versicolor -30.413552751053114
+setosa -0.7556196570674242
+virginica -46.34802054571772
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 18 [5.4, 3.4, 1.5, 0.4] ; Pred= setosa ; Actual= setosa ;  True 
+
+versicolor -39.332698888393494
+setosa -0.15111228928023512
+virginica -55.258412720860115
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 19 [5.0, 3.2, 1.2, 0.2] ; Pred= setosa ; Actual= setosa ;  True 
+
+versicolor -1.3880543088253825
+setosa -209.43701918241192
+virginica -9.419562441919206
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 20 [5.5, 2.6, 4.4, 1.2] ; Pred= versicolor ; Actual= versicolor ;  True 
+
+versicolor -2.2409904036757404
+setosa -248.6267533952453
+virginica -6.203908758687335
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 21 [5.4, 3.0, 4.5, 1.5] ; Pred= versicolor ; Actual= versicolor ;  True 
+
+versicolor -5.359437586202645
+setosa -349.0227263062297
+virginica -2.33683306650311
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 22 [6.7, 3.0, 5.0, 1.7] ; Pred= virginica ; Actual= versicolor ;  False 
+
+versicolor -37.06244522290436
+setosa 0.5722622258804022
+virginica -52.951342710986815
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 23 [5.0, 3.5, 1.3, 0.3] ; Pred= setosa ; Actual= setosa ;  True 
+
+versicolor -14.695334112175255
+setosa -526.4818759887595
+virginica -2.743074702763753
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 24 [7.2, 3.2, 6.0, 1.8] ; Pred= virginica ; Actual= virginica ;  True 
+
+versicolor -0.9194932042391687
+setosa -186.4942859392572
+virginica -8.703508224656774
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 25 [5.7, 2.8, 4.1, 1.3] ; Pred= versicolor ; Actual= versicolor ;  True 
+
+versicolor -44.268411809321776
+setosa -2.6648383351163787
+virginica -58.85557175039779
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 26 [5.5, 4.2, 1.4, 0.2] ; Pred= setosa ; Actual= setosa ;  True 
+
+versicolor -36.67994830038669
+setosa 0.3705988062353285
+virginica -52.135441518064816
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 27 [5.1, 3.8, 1.5, 0.3] ; Pred= setosa ; Actual= setosa ;  True 
+
+versicolor -1.4568748191287013
+setosa -248.62595103038046
+virginica -6.831996600019302
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 28 [6.1, 2.8, 4.7, 1.2] ; Pred= versicolor ; Actual= versicolor ;  True 
+
+versicolor -6.935750313052443
+setosa -373.65440225642624
+virginica -2.889856103657743
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 29 [6.3, 2.5, 5.0, 1.9] ; Pred= virginica ; Actual= virginica ;  True 
+
+29 29 100.0 %
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<blockquote><p>完全正确！</p>
+</blockquote>
+
+</div>
+</div>
+</div>
+    </div>
+  </div>
+</body>
+
+ 
+
+
+</html>

@@ -93,7 +93,11 @@ ID3 无法直接处理数值型的feature。 CART 是不是更好呢？
 
 ## 3. NB: naive bayes (朴素贝叶斯)
 
-(2) py版的 NaiveBayes: 离散型、连续型 NB/Naive_bayes.ipynb
+(2) py版的 NaiveBayes: 离散型、连续型 
+
+Path: /NB/
+- [py手写实现](/NB/Naive_bayes.html)
+- [naive_bayes_sklearn.html](/NB/naive_bayes_sklearn.html)
 
 
 

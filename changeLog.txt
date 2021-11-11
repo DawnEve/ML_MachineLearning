@@ -31,14 +31,24 @@ v0.2.3 nb2html: KNN, NumPy; add sklearn KNN; [2021.11.6]
 v0.2.4 KNN 的css独立文件; add 线性模型 lm; [2021.11.10]
 	<link rel="stylesheet" type="text/css" href="/static/css/md_notebook.css" /> # for Ubuntu
 	<link rel="stylesheet" type="text/css" href="/static/css/md_notebook-win10.css" /> # for win10
+v0.2.5 naive bayes sklearn; [2021.11.11]
 #
 ## commit 
 ## -------> push
 
 
 
+#
 
 
+
+
+#
+
+
+
+
+#
 
 
 
@@ -72,16 +82,29 @@ http://localhost:8900/
 其他页面更新流程
 1. notebook 页面，File - download as - html or html with TOC;
 2. 去掉前面的css，加入外部css文件。
-3. 图片都是内置的，但都很难带上目录。 //todo
+3. 图片都是内置的，但都很难带上目录。那就不要目录了，等有空自己写js插件。 //todo
 4. 添加到首页 /index.hmtl
-
+5. 目测效果，有些混乱的地方加上 pre 标签。
 
 (1) Y station 生成的: 大，无3d边；
 jupyter-core 4.9.1
+nbconvert==6.2.0
 Y station:	<link rel="stylesheet" type="text/css" href="/static/css/md_notebook.css" />
+
+改装为老版本呢？
+$ pip3 install nbconvert==5.6 -i https://pypi.douban.com/simple/
+$ pip3 freeze | grep nbconvert
+nbconvert==5.6.0
+
+重启 notebook 
+$ cd /home/wangjl/data/web/docs/jupyterlab/
+$ jupyter notebook --no-browser --port 9000 --ip=192.168.2.120
+
 
 
 (2) win10 生成的: 小，有3d边;
 jupyter-core 4.4.0
+!pip3 list | find "nbconvert"
+nbconvert 5.3.1
 win10: <link rel="stylesheet" type="text/css" href="/static/css/md_notebook-win10.css" />
 ########################
