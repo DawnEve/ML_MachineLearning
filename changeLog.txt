@@ -32,6 +32,7 @@ v0.2.4 KNN 的css独立文件; add 线性模型 lm; [2021.11.10]
 	<link rel="stylesheet" type="text/css" href="/static/css/md_notebook.css" /> # for Ubuntu
 	<link rel="stylesheet" type="text/css" href="/static/css/md_notebook-win10.css" /> # for win10
 v0.2.5 naive bayes sklearn; [2021.11.11]
+v0.2.6 sklearn: tree & RF, SVM; [2021.11.12]
 #
 ## commit 
 ## -------> push
@@ -91,6 +92,8 @@ jupyter-core 4.9.1
 nbconvert==6.2.0
 Y station:	<link rel="stylesheet" type="text/css" href="/static/css/md_notebook.css" />
 
+
+
 改装为老版本呢？
 $ pip3 install nbconvert==5.6 -i https://pypi.douban.com/simple/
 $ pip3 freeze | grep nbconvert
@@ -99,6 +102,8 @@ nbconvert==5.6.0
 重启 notebook 
 $ cd /home/wangjl/data/web/docs/jupyterlab/
 $ jupyter notebook --no-browser --port 9000 --ip=192.168.2.120
+
+还是改回去吧。
 
 
 

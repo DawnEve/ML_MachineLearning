@@ -376,7 +376,10 @@ testing score: 0.544
 </div>
 </div>
 
-</div># 这就是简单把2条线，分为4个象限，注意有3个颜色。
+</div>
+
+<pre>
+# 这就是简单把2条线，分为4个象限，注意有3个颜色。
 # 因为使用了伯努利朴素贝叶斯的默认参数 binarize=0.0，所以模型对于数据的判断是
 #  如果特征1大于或等于0，且特征2大于或等于0，归为一类；
 #  如果特征1小于0，且特征2小于0，归为一类；
@@ -384,6 +387,8 @@ testing score: 0.544
 # 所以分类效果很烂。
 
 # 对于多分类，不能使用伯努利朴素贝叶斯模型了。可以使用高斯朴素贝叶斯模型。
+</pre>
+
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
@@ -587,9 +592,12 @@ testing score: 0.968
 </div>
 </div>
 
-</div># 大部分数据放到了错误的分类中。
+</div>
+<pre># 大部分数据放到了错误的分类中。
 
 # 多项式NB只适合对非负离散数值特征进行分类。典型例子是转化为向量后的文本数据进行分类。
+</pre>
+
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
@@ -859,8 +867,10 @@ real: 1
 </div>
 </div>
 
-</div># 可见，随着样本量的增大，训练集打分逐渐降低，因为要拟合的信息越来越多。
+</div>
+<pre># 可见，随着样本量的增大，训练集打分逐渐降低，因为要拟合的信息越来越多。
 # 而测试集打分基本不变，说明高斯NB在预测方面，对样本量的要求没那么苛刻。如果样本量少，可以考虑NB建模。
+</pre>
     </div>
   </div>
 </body>

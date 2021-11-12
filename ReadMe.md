@@ -13,6 +13,9 @@ $ curl http://localhost:8008 > index.html
 ```
 
 
+
+
+
 # 第0章 模型的选择
 
 
@@ -68,7 +71,7 @@ AUC 是曲线下面积
 
 
 
-## 2. Tree & RF (决策树)
+## 2. Tree & RF (决策树与随机森林)
 
 主要算法: ID3, C4.5, CART;
 
@@ -82,6 +85,9 @@ moojnn  大数据魔镜  2015-11-06
 (2) 基于Py
 
 ID3 无法直接处理数值型的feature。 CART 是不是更好呢？
+
+/DecisionTree/
+- [sklearn_tree_RF.html](/DecisionTree/sklearn_tree_RF.html)
 
 
 
@@ -138,6 +144,9 @@ https://www.analyticsvidhya.com/blog/2015/11/beginners-guide-on-logistic-regress
 
 
 ## 5. SVM (支持向量机)
+
+/SVM/
+- [sklearn_SVM.html](/SVM/sklearn_SVM.html)
 
 pluskid 的SVM系列教程 http://blog.pluskid.org/?page_id=683
 
@@ -432,3 +441,11 @@ logistic 回归: 从疝气病预测病马的死亡率 (斧头书chapter5.3, P85)
 ## 4. titanic data
 
 https://www.kaggle.com/c/titanic
+
+
+
+
+## UCI datasets
+
+https://archive-beta.ics.uci.edu/ml/datasets
+
