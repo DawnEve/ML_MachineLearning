@@ -33,6 +33,7 @@ v0.2.4 KNN 的css独立文件; add 线性模型 lm; [2021.11.10]
 	<link rel="stylesheet" type="text/css" href="/static/css/md_notebook-win10.css" /> # for win10
 v0.2.5 naive bayes sklearn; [2021.11.11]
 v0.2.6 sklearn: tree & RF, SVM; [2021.11.12]
+v0.2.7 sklearn: NN; [2021.11.12]
 #
 ## commit 
 ## -------> push
