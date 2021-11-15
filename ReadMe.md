@@ -391,7 +391,8 @@ path: txtBlog/data/Math/
 ## 4. 机器学习资源
 
 - [书PRML(Pattern Recognition and Machine Learning)](https://www.microsoft.com/en-us/research/people/cmbishop/#prml-book)
-
+- chapter 9 数据预处理 [sklearn_preprocessing.html](/sklearn/sklearn_preprocessing.html)
+- chapter 10 特征工程 [sklearn_featureSelection.html](/sklearn/sklearn_featureSelection.html)
 
 
 
