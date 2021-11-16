@@ -34,7 +34,8 @@ v0.2.4 KNN 的css独立文件; add 线性模型 lm; [2021.11.10]
 v0.2.5 naive bayes sklearn; [2021.11.11]
 v0.2.6 sklearn: tree & RF, SVM; [2021.11.12]
 v0.2.7 sklearn: NN; [2021.11.12]
-v0.2.8 sklearn: 预处理, 特征工程; [2021.11.15]
+v0.2.8 sklearn: 9.预处理, 10.特征工程; [2021.11.15]
+v0.2.9 sklearn: 11.模型评估与优化; [2021.11.16]
 #
 ## commit 
 ## -------> push
