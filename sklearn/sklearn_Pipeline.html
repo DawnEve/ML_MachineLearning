@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>sklearn_Pipeline</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="/static/css/md_notebook.css" />
+
+<!-- Load mathjax -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML-full,Safe"> </script>
+    <!-- MathJax configuration -->
+    <script type="text/x-mathjax-config">
+    init_mathjax = function() {
+        if (window.MathJax) {
+        // MathJax loaded
+            MathJax.Hub.Config({
+                TeX: {
+                    equationNumbers: {
+                    autoNumber: "AMS",
+                    useLabelIds: true
+                    }
+                },
+                tex2jax: {
+                    inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                    displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+                    processEscapes: true,
+                    processEnvironments: true
+                },
+                displayAlign: 'center',
+                CommonHTML: {
+                    linebreaks: { 
+                    automatic: true 
+                    }
+                }
+            });
+        
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
+    }
+    init_mathjax();
+    </script>
+    <!-- End of mathjax configuration --></head>
+<body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
+
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>chapter 12: 建立算法的管道模型</p>
+
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="%E7%AE%A1%E9%81%93%E6%A8%A1%E5%9E%8B%E7%9A%84%E6%A6%82%E5%BF%B5%E4%B8%8E%E7%94%A8%E6%B3%95">&#31649;&#36947;&#27169;&#22411;&#30340;&#27010;&#24565;&#19982;&#29992;&#27861;<a class="anchor-link" href="#%E7%AE%A1%E9%81%93%E6%A8%A1%E5%9E%8B%E7%9A%84%E6%A6%82%E5%BF%B5%E4%B8%8E%E7%94%A8%E6%B3%95">&#182;</a></h1>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5">&#22522;&#26412;&#27010;&#24565;<a class="anchor-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5">&#182;</a></h2>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[1]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 常规步骤：数据预处理，交叉验证模型评估模型，使用网格搜索找到最优参数。</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_blobs</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">StandardScaler</span>
+<span class="kn">from</span> <span class="nn">sklearn.neural_network</span> <span class="kn">import</span> <span class="n">MLPClassifier</span>
+
+<span class="c1"># 生成数据，200个样本，分类2， 标准差为5</span>
+<span class="n">X</span><span class="p">,</span><span class="n">y</span> <span class="o">=</span> <span class="n">make_blobs</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">centers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">cluster_std</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="c1"># 拆分数据集</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">38</span><span class="p">)</span>
+<span class="c1"># 预处理</span>
+<span class="n">scaler</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+<span class="n">X_train_scaled</span><span class="o">=</span><span class="n">scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+<span class="n">X_test_scaled</span><span class="o">=</span><span class="n">scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;shape of the datasets: &quot;</span><span class="p">,</span> <span class="n">X_train_scaled</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">X_test_scaled</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="c1">#(150, 2) (50, 2)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>shape of the datasets:  (150, 2) (50, 2)
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[2]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 神经网络是典型的需要数据预处理的算法模型。</span>
+
+<span class="c1"># 原始的训练集</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
+<span class="c1"># 经过预处理的数据集</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train_scaled</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">X_train_scaled</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;^&#39;</span><span class="p">,</span> <span class="n">edgecolors</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;training set &amp; scaled training set&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="c1"># 处理后的数据更加“聚拢”。</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+
+
+<div class="jp-RenderedImage jp-OutputArea-output ">
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXkAAAEICAYAAAC6fYRZAAAAOXRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjQuMywgaHR0cHM6Ly9tYXRwbG90bGliLm9yZy/MnkTPAAAACXBIWXMAAAsTAAALEwEAmpwYAAAxFklEQVR4nO2dfZwU1ZX3v2d6emAA46ASgVEEjUJEECKr2aAmGldMXFeiSZSNAmokWXX30fjAQsSHuCbKQuLLbsTExBc0ChoDo4lGDEjiR7KyjgICUdSICuPwYnCEGRromb7PH1U99MxUdVd3V/VL9fl+Pv2Z7qrqqlM1t3916txzzxVjDIqiKEo4qSq2AYqiKEpwqMgriqKEGBV5RVGUEKMiryiKEmJU5BVFUUKMiryiKEqIUZGvAETkZyJys9/bKgcRkaEiYkSkupDfzeIY2gYqFNE8+dJGRN4Dvm2MWV5sW4qBiEzFOv/TM2x3GfBD4DDgDeBiY8zW4C3sPP5QYDMQNca0+/ldbQPe2oDiTGCeg1IYRKQ6W1EJGyLSD3gQOB9YDpwC7CuqUQVE24CSFmOMvkr0BTwCJIAY0ArMAIYCBrgK+AB40d7218A24BPgRWBkyn4eAn5ov/8SsBW4EdgBNANX5Ljt4cBvgd3AK1ie9Esu59Ib+BXwN6DF3v5Ie92hwP32/pvs/USAz2KJdYd9/i0u++5rX6Pjs7i2pwKNtu3bgTtS1p0O/Nm2cwsw1V5+PrDG/s4W4Acp30n+X6rTnZO9LgL8GPgIeBe4NvW72gaybwP6cn9pTL6EMcZcjvUjvsAY088YMy9l9RexfgAT7M+/B44HPg28BjyaZtcDsX5U9VhCcY+I9M9h23uANnubKfbLjSn2fo7GEobvYgkXWKLSDnwGGAuci/V4/oa93f/Y51/nsu8DwFrgCRE5LI0NqdwN3G2M+RRwHPAEgIgcg3Ut/xsYAIyx9419rpOBOizB/xcRmeiyf8dzstddDfyjvXwc8HU3I7UNeG4DihvFvsvoK/0LeA84J+XzUCwv7tg036mztznU/vwQXT2zGCleI5aH9vlstsXysuLA8JR16by4K7G849Hdlh8J7AdqU5ZNAlba76e67TNl+5/ZrxnAq8BhKfb8xOU7LwK3AEd0Wz4LWOrxf3MXcGe3/0u1h3N6AfhuyrpzcfHktQ14awP6cn9pTL582ZJ8IyIR4EfAN7C8z4S96gisR/fu/M10jeHuBfq5HMdt2wFYgrYlZV3q++48guXBLRaROqzH9puAY4Ao0CwiyW2rMuyrExHpi+VdDjHGNNue/HIROQcYjxUWceIq4D+AN0VkM3CLMeZ3to1/dTnWacBc4CSgBuiFFSLpTqZzGtzt/N73cKpOaBtQMqIiX/q4pT+lLv9n4ELgHCyv71DgY0B6fs03dmI9Xh8FvGUvO9ptY2NMHMtzvsXOJnkW2GT/3Y/lUTt1HmZK/6rC8iij9nFm2qGEl7E80N+72PM2MElEqoCLgCdF5HAsYTnV5ViPAT8FvmKM2Scid2GJaHe2ZDinZrpeqyFpz1DbgKYA5oHG5Euf7cCxGbY5BOtH8jegD3Bb0EYZYzqAJcAPRKSPiIzAilc7IiJnicgo2+PcjfWYnzDGNAPPAz8RkU+JSJWIHCciX7S/uh04SkRqXOzYAzwHLBCRI+3tXsC6ZrtxcWRE5DIRGWCMSWB1AoLl/T4KnCMi3xSRahE5XETG2OsPAXbZAn8qlrA62ZTpnJ4A/k1EjrJvSDPdrlvKNdA24NIGlPSoyJc+twOzRaRFRP6vyzYPYz3yNwF/wfJiC8F1WB7jNqxH8UVYQuPEQOBJrB/3G8Cf7O+AJQw1WLZ/bG83yF73ArAR2CYiH7ns+zIsIViHlbFyBVaopgp4wOU75wEbRaQVqxP2UmNMzBjzAfBVrGySXVidrifb37kG+A8R2QP8P+zOWhfSndMvgGW2va9hCWU6tA1kbgOKCzoYSvENEflPYKAxJl2GhRJitA2UHurJKzkjIiNEZLRYnIrVmbm02HYphUPbQOmjHa9KPhyC9Xg+GCtc8hPgqaJapBQabQMljoZrFEVRQoyGaxRFUUJMSYVrjjjiCDN06NBim6EoilJWvPrqqx8ZYwY4rSspkR86dCiNjY3FNkNRFKWsEBHXUdMarlEURQkxKvKKoighRkVeURQlxKjIK4qihBgVeUVRlBBTUtk1ihIkDWuamL9sEx+2xBhcV8v0CcOZOLa+2GYpSqCoyCsVQcOaJmYtWU8s3gFAU0uMWUvWA6jQK6FGwzVKRTB/2aZOgU8Si3cwf9mmIlmkKIVBRV6pCD5siWW1XFHCgoq8UhEMrqvNarmihAUVeaUimD5hOLXRSJdltdEI0ycML5JFilIYtONVqQiSnauaXaNUGirySsUwcWy9irpScWi4RlEUJcSoyCuKooQYFXlFUZQQk7fIi8jRIrJSRP4iIhtF5P/Yyw8TkT+IyNv23/75m6soiqJkgx+efDtwozHmRODzwLUiciIwE1hhjDkeWGF/VhRFUQpI3iJvjGk2xrxmv98DvAHUAxcCC+3NFgIT8z2WoiiKkh2+xuRFZCgwFlgNHGmMabZXbQOO9PNYiqIoSmZ8E3kR6Qf8BrjeGLM7dZ0xxgDG5XvTRKRRRBp37tzplzmKoigKPom8iESxBP5RY8wSe/F2ERlkrx8E7HD6rjHmPmPMOGPMuAEDBvhhjqIoimLjR3aNAPcDbxhj7khZ9TQwxX4/BXgq32MpiqIo2eFHWYPxwOXAehFZay/7PjAXeEJErgLeB77pw7EURVGULMhb5I0xLwHisvrL+e5fURRFyR0d8aooihJiVOQVRVFCjIq8oihKiFGRVxRFCTEq8oqiKCFGRV5RFCXEqMgriqKEGBV5RVGUEKMiryiKEmJU5BVFUUKMiryiKEqIUZFXFEUJMX5UoVQURxrWNDF/2SY+bIkxuK6W6ROGM3FsfbHNUpSKQkW+CFSC+DWsaWLWkvXE4h0ANLXEmLVkPUDozlVRShkN1xSYpPg1tcQwHBS/hjVNxTbNV+Yv29Qp8Eli8Q7mL9tUJIsUpTJRkS8wlSJ+H7bEslquKEowqMgXmEoRv8F1tVktVxQlGFTkC0yliN/0CcOpjUa6LKuNRpg+YXiRLFKUykRFvsBUivhNHFvP7ReNor6uFgHq62q5/aJR2umqKAVGs2sKTFLkwp5dA9a5hvG8FKWcUJEvAip+iqIUCl/CNSLygIjsEJENKct+ICJNIrLWfn3Vj2MpiqIo3vHLk38I+CnwcLfldxpjfuzTMRTFFyphMJqiJPFF5I0xL4rIUD/2pShBoiNxlUoj6Oya60TkdTuc099pAxGZJiKNItK4c+fOgM1RKp1KGYymKEmCFPl7geOAMUAz8BOnjYwx9xljxhljxg0YMCBAcyqLhjVNjJ/7AsNmPsP4uS+ErmxCrlTKYLQwom06NwLLrjHGbE++F5FfAL8L6lhKV4IOSZRzTHtwXS1NDoIetsFoYUPDbLkTmCcvIoNSPn4N2OC2reIvQYYkyr3AWqUMRgsbGmbLHV88eRFZBHwJOEJEtgJzgC+JyBjAAO8B3/HjWEpmggxJpPuxlYNHVUmD0cKEhtlyx6/smkkOi+/3Y99K9gQZkgjDjy0Mg9HKOWSWCxpmyx2tXRNCggxJFLrAmt+dbWHovCv3kFkuaJgtd1TkQ0iQxcEK+WPzW8zCIo5uIbPrH19btjeuTGjBu9wRY0yxbehk3LhxprGxsdhmKBkoVKhg/NwXHB/R6+tqWTXz7KLvr1gMm/kM6X61tdGICmCFISKvGmPGOa3TAmVK1hQqpu13/D8M/QngHp9OUk4d4UrwaLhGKVn8jv+HZcIWp5BZd8rtxqUEh4q8UrJkE//30qEals671Pi0G+V241KCQ8M1SsniNafd62jIMOXIJ0Nm3c8dyvPGpQSHirxS0niJ/3sdoFWIDuNC56+H6calBIOKvFL2eOlQLUTtk2LVVwnD4C4lODQmrxQFPwcleelQzaX2SbY2an0VpRRRkVcKjt+Dkrx0qGabPpmLjWFJ0VTChYq8UnD89ni9jIbMNn0yFxvDkqKphAuNyZch5V6cKgiPN1NcevqE4VlloeRiY7bHUJRCoCJfZoRh8oRiVBTMNgslFxs100UpRbR2TZkRhvorbrndt180CigNkUxno4q2Umpo7ZoQEYbOPTePFyiZp5Ry9soLGc4r99BhJaAiX2YUI9QRxA/ZKYY+fu4LJTXrVDnmnxcynBeG0GEloNk1ZYaf9Ve85IEXsgZ7GJ5Sik0Qufpu7UTHBZQH6smXGX6FEbx6YW4/5B88vdF3by0MU7wVO3zh940yXTvRm3J5oCJfhvgRRvBa78XtB9sSi9OwpslXAfMrBbFYQuskiDc8vpbrH19LfYHsyOVGme56pWsnYbgpVwIarqlQvHph6X6wfj+W+zHFWzGn+HMSxGTuWqHsyDacl+l6pWsnYSndHHZ88eRF5AHgH4EdxpiT7GWHAY8DQ4H3gG8aYz7243hK/nj1wqZPGM71j6913EcQj+X5PqV4fULJlXReb6brUYhO5GzDeZmuV7p2Us4ZSJWEX+Gah4CfAg+nLJsJrDDGzBWRmfbnf/fpeEqeZAqNpIpZlUDCYThFKT6WBxknztSPkWlavmztyDXslM2NMtP1ytROyjEDqdLwJVxjjHkR2NVt8YXAQvv9QmCiH8fqjp/VDCuJdKGR7o/wTgJfqo/lQdaPyZRN4mVavsF1tSWV1ZTpevkRQlOKS5Adr0caY5rt99uAI502EpFpwDSAIUOGZHUAzdN1x4sX6OaFOYkZQESEhDEl/VgeZP2YTF7vxLH1NL6/i0df/gCnceS10QhnjRiQV1aT3+EeL9dLvfXypiAdr8aqneBYP8EYc58xZpwxZtyAAQOy2q/m6TqTrxfoJmYJY9g893xWzTy7ZH/0QXqeXp4SVr6507GhR0S4/aJRrHxzZ8Y227CmyTXs43c/iHrq4SdIT367iAwyxjSLyCBgh98H0DxdZ/L1Ar10yhY7HzwdfnueyXNtaokhdPVWvNatTxjDxLH13JChEzt5g3YjiH4Q9dTDTZCe/NPAFPv9FOApvw+g9budyffmlyk1rphpioUm9VzBEnix1+VStz7TerdQGZRuP4hS2vgi8iKyCPgfYLiIbBWRq4C5wD+IyNvAOfZnX9E8XWfyvflleoSvpDCZW+57supndw84U5vMtD7djdhrGEWTEZRUfAnXGGMmuaz6sh/7d0PzdJ3x2vmYLuSS7hG+ksJk2Z5rpjaZab1bqKw+JS89HX4lI5RyOE7JjrIva6DxxJ54ufnlIwaVNJw918lD0l3DdOvzzQ7yIytHs9bCRdmLvOJMJqHxIgZu3lwlTXNX6HPN9+nUj6esQqVvKoVBRb5CySQGXry5SnicL8a55vN06sdTViWF4yoBFfkKJZMYZPLmKilMFsS5BhXz9uPJo5LCcZWAVqH0iXLLaMg1y0O9ufwJMgXVj8FNXlJoy6mtVzrqyftAOXZU5ZrlEZQ3V0nZHEHHvPN98kjXNsqxrVc6YlUcKA3GjRtnGhsbi21G1oyf+4Jr2tuqmWcXwaL86f5jBsubu/2iUYC/MerZDet71HtJHiuMwjFs5jOOpQ8E2Dz3/EKbkxVhbOthQEReNcaMc1qnnrwPlGtoI1OePPQUc8BXT65hTZNjQa8wZHO4Xd+gn5KCfCoq17ZeyajI+0A5dlR5eex2euwfP/cFX0MN85dtcq5cR/DC4VUMcxHNdNc3yLTMoMMp5djWKx3tePWBQpVX8LPDK9fSBH57cum+F6RweO38nN2wnhseX5t1J2mmuHtQlR+DLjmhpUTKD/XkfaAQudR+e2i5irXfnly62ZT2HmjPabJwL56318FgbqGkG59Yxw2Pr3Xdv5fa80GEooIOp1TSGImwoCLvE0HnjfudkZGrWPsdanDaX5KP98azvpF5vRl6EcN0oaQOO2HBbf/ZXF8/Y+iFCKdU0hiJMKDhmjLBbw8t18duP0MNSXGLxTuIiDhuk22owe1meMtvN3ZZ5qVSp9dr62Sj1+vrNWzkdcrAtv3tPZZrOKWyUU++TPDbQ8vnsdsPT667x92RJpU3mxuZ27Yf7413Cf14eSLxMjG323G9Xl+vYaNMTydOKa8A/ftEmXPBSPW8KxgV+TIhiIyMYj52p5scozvZ3MjSCXPS204K76G1UXpHq2jZG3cU4XShJC82erm+XsNGmW4EbtezT021CnyFoyJfJmQahVhuHWFevfNsb2TTJwznepcp9pIecFIMW2JxaqMR7rxkDGBdW6fO1NRre9aIAfzm1SbfbraZntC8zveaTTivHNuLkjs64rXMSTcytZR/uG4jJ+tqo/TtVZ2XAI255XlaYvEeyyMijmGhutoo+9sTnq9hPiLZ/btuN43kyOJ0TxKpo0zdrmdyO7eyBJnOVSkP0o14VZEvA9KJSrkOMw9SbNz27TU8lCTTNcxW7N3suviUela+ubPHftIJd/dr5RaT7759ckLybM9VKW20rEEZk6nTrVyHmQeZb+22bzeBcyP1GmbywL2MW3CLra98c6ejwGYz32vqOTudYzKGX67tRckdFfkSJ1OnWzkPMw+y49dt306edO9oFR/v7RneSY2Ld7/R5lJvJ1uBzXa+1+Q5uxVAS96gyrW9KLmhefIlTiZh0GHm3nHL8Z9zwci019DpRptNvZ1kjrvbd9wENtf/bboxANpeKo/APXkReQ/YA3QA7W5xI8WZTJ5XGIaZO8W2IbhQTrpwitPxsglldBdYL7FyN4HN9X+bLt02qPaiGTulS+Adr7bIjzPGfJRpW+147UnYsyEyiWCSQp5zd8Hae6DdMZzjxUavWS9+U0jRDXsbLQe047WMKVdP3avIeB0UVaj68k7x92iVEI0I8Y6eDpFghW7cBNvtKUAg0GyWQg50C3qmKyU/CiHyBnheRAzwc2PMfakrRWQaMA1gyJAhBTCn/Ci3glDZVMz0o2SBnzgJVjxhqKuNsmdfe488+6TAuwl2JXR0asZOaVOIjtfTjTGfA74CXCsiZ6auNMbcZ4wZZ4wZN2DAgAKYowRNNjXNsy1ZEDRuwvRJLE7CJbSZTswqoaPTS7E3pXgE7skbY5rsvztEZClwKvBi0MdViodXz65hTRN7D/SsmuhEoYTRzfM2uI+YTSdm+YbbkmGvppZY5/GDjOXnQpAzXSn5E6jIi0hfoMoYs8d+fy7wH0EeUyk+XkIUXjtcwSo78IN/cq6k6HcHY7qiZE4C71Y+uLtNXuPvqd89tDZK24H2zr6ATDXsi0W59htVCkF78kcCS8WqFV4NPGaMeS7gYypFxotn59bhmk3tmiDmM800chQsjz5hjKN9+djU/btO9XeSlFrHZrn1G1USgYq8MeZd4OQgj6GUHl48u3Sx77VzzvV0nKCyOjKNHE0Yw+a55/tuUzbll0E7NhVvaAqlEgiZPDs/sk6CzurIxcZMNqULL2Vrt3ZsKl7QsgZKUfAj6yTorI5sbWxY00SVyzSGg+tqM071l43d2rGpeEVFXikK+c4V29zczAf3Xkl0/yddlqeKn5d5Uf2yMSng6TpnM6WWOt1UolVC/z5RgM55cPOZV9cr+V47pXTQcI1SENzCFLkK1bzbbqVt51ZO2f48O0dPdpwty49OWa82usXTIyKdgnyDy4xVyTCNX1kq+WYcBdGhrRQPFXklcPwWjebmZhYufIgVl/fmnMVPsPGOuQwcOLDLNoUeau8WT08Y03k8LzH+fLNU/LjWWqYgXGi4RgmcbEbAemHebbcyZXSEsYMiTB4VYd5tt/bYptBD7b30DxRi9Ksf11rLFIQLFXklcLxknHiN/ya9+BmnWZ9nnAYLFz7Itm3bumxX6KH2XgQ8334IL/gh0FqmIFxouKZECHM97nRhimzDC0kvftAhln8y6JAqJo+ylt/xX/d0bpftUPt8r7/XeHrQg4b8SE3VMgWFJejfvk7kXQKEvR630/lF933CvqXfZ+BlP2ZnR08BSlZ2bG5u5qwvns4fX1zFwIEDOfaYo9j8QU9Pf9iQet59f2uP43r58YTp+vt1LmF2OkoJv/5f6erJq8iXAG4TS6QrYVtudBeNAesW8uJTj1I18jz6fflfemwvwOa553PDv17DwvvvY+q3v9PFU/fTniqXwmPFvv65Cm2hBFpvBPnj129fJw0pcSqhoys1TNHc3MzI4b9mxeW9OeOR5dSedikGw65FMzh80nwi/fpzRNVePnPsMezaucPKoln4IDO+f3NnFk13Dz8buntP+/f8rcuxk3zYEiua0OaTJVOIOjKaZukPhfjta8drCVAuHV1+DZBJzY65akw18cbH2bd6MTV7dxBbvZjaaIT6zb9jx4db+NZIOrNo5syeyYgTjmPbtm3MuWkm7737LnNumuV4jObmZo4/diifOfaYHp2y3TNQUo+dyqG10bQjVNNdJ6/fm92wnuNmPcvQmc9w3Kxnmd2w3tFGyC8jyW+CsK8SB2AV4revIl8ClMPEEtkIVzq6Z8fM/Hth34bl7N2wnJWTa9m3cTnTRlbxx98+QQTD98dbD5szToNFjz7Kti2bGf3Z4/nVo48A8NhjD7Nt2zaam5s7bwBg3Ug+av6AHR9u6ZFimeoltbfuImYfO7ZxOR2tHwNWuEiEnITMqwDObljPr17+oDNU1GEMv3r5A2Y3rC/o010u4uq3fX61r3KjEL99FfkSoBCpdfnil+fmlB1z2UmGGnOAQYcIV38uyqL/vJHj6zqYOqam23bCBcdHaG1thYShTxRMR4KRI05gzk2z2LH1febddivNzc089NCDvDC5D9ViePDBB7p486le0r7Vi5l6cjVjB0WYOjrS6c0boMVl8u5MQuZVABet3uK43aLVWwr2dJeruPptX6k/uQRFIX77GpMvEUq9HrdfnttTTz/N5g9auWtV1+W9IzBv1QG++pkICx7bwIC+cNdquGv1gS7bDauzbgS/fC3Oisl9OePBNuKxPSx+7Ff8aYoVu29ra+OykTCwnxAR4ah+7cy77Vamz5rNmeP/nrYDHUQm3o7BENuwnNnX1AAwe3wVD91r9REMOWowgGOn2KG1UcbPfcE13u510hSnzl6wPPpCpTHmOrrVb/sqoV/KjaB/++rJK57IxXPrHkIBePf9rRhjOl9XXzGZfjXw56v6snBdnBl/2E+fGmhPQPON/fjwe/3oVwOvTetL/97WdjNP70WkCgYdIkw+Ocq5x0XYF+/gC/e30doa4+GHH+b746uZt+oAHcbw113tLLj3XmZ873o+av6A1o+aiK1e3OnFpz4tTB0dId74ONMnDHctGNZ2oD2t55vpETzpPbsRESnY010+4to7elA+6mqjedmXrn1VYqzeT9STVzyRi+c277ZbO0MobumPS5f8hstHRxnYTzDGsOlvhlVX9mX8A20MubMVEbhqbJSxgyJMObmGeasOcMeE3lw5Nsq8VQe4+cxeDP9pK72qISKQMDD0UDjzwTZ27jWsnGJ5+72qDEuefIKXruzLlx9uY++GP0BNXxbs3suC1V1tGjSosYtYpWbJ7D3QzsfdwjjdPd9MA6MyTQ4y6bSjO/cT9NNdLoOnnHK797cn8rLDrX2dNWKAZvHkiYq84olsKyR2KSKWkv6YmvpojKEjkeDmM3sxb9UB2hMwdYwl6FefEuXBNXEMcPOZvQCYMb6G4/6rlTtftkI4w+qEOyb05msjqvnNG+2snGoJ+Du7DDXVcFz/Kisz5+Qoe/YbntrU3un9r9qaYMtR4/n0l77babPTIJTuQjts5jOO59vd800n0Om85Ms+P4QfThzlut5vcrl5B1HAzK19ZYrVa55+ZlTkFc9k41keTJOsYvIo6fTmU717YwxTRkfY3ppgwSsHqI0eFPSZ43tx/2txvjGyWzhlTJT718Q50AGbWwxyy25qIge9/UknRVm4Ls7KKZbgb2u1biIn3dvGJSOtEM6/j+/FyAWttH/8B47+8hQ+6qj1LBJ+lA1w20d9XW1BBR5yK28cVPzcqX25lWdOevTq4WdGY/KK77gVEVu3bl2nd79w4YMsXdrAXata+cIDe+lVDZeNjnatSXNylMfWtyO37O583dsYt0I7cz7Fh9/rR+8IRKsO3hxmn9mLKrHi9cnwzqBDqpg8OkqVCAvXxRGBySdHGdE/wRl7VrJ57vmsmnm2J3HwI+Wt2Cmz3WPcAKtmns2dl4wBLGFNF/su5LgOt31GRCoyGycXAi9rICLnAXcDEeCXxpi5bttWalmDsHHDv14Dax7hznMO+hA3LE+wqu0Yxvd9nzvPqeKG5Qnkc5P5ygUTufCr53J4H2Hr7p5tsX9vaItb8fZVV/bliw+18da/9mNgP2vff3dfK39XH2HB+QfF4PrnrFIF079ghXdi7dbyYXXCGUMiLNrQTjwBNRGor+9Z8yYTfgznL9Y+3GqlXHxKPb95tclTDZVC1vpxO5Zbn0ayHEalUbTaNSISAd4C/gHYCrwCTDLG/MVpexX5cOBWRKx3tfDuv/Vl0CFVNO9JcNIvO+gVjTJxWIwF59dyzTOxzlBMKr0icOnIal5uSvD5o6pYtKG9c5uaCD22Bzj6U9AnWuW4fW01dBjh7fc/dCyJUA41WRyLvlUJ/XpX07I37mq3W62USJb1ewp5jZyONX/ZpoLVeyqH9lDM2jWnAu8YY961DVkMXAg4irwSDpw846R3nxqO+cqwDpZs3M3NZ/YDrJDL4g1x3r++H8bASfe28akaw/Y2qKkWdrQl6BWJ0DdKl22+8pkIv3urnfaE5fUDbG+D2uoEizYkiFbBlNFRXnivnV0xw4rJ1hPBnJtm8fP7H+xiZ7nUZHHqkIwnTGfmj5vdbnFzt5x9t+0LOa7D7ViFGEdQLu0hHUHH5OuB1GF9W+1lnYjINBFpFJHGnTt3BmxOaVIJecBPPf00d61q7RJfX7IxxpVju8bhU+Pol4ysZnsr9K6GJzZag5+efKOdr3822rnN5aOreXpTO098o5aEgQ+/Z+XW94nCyil9iQjU9YaFr8fZ0Wa49CSrg/ay0VGW/ObXPex0y+b40a//3CPnv5h46eR0ilGni3E7UWr1k5IUahxBGEbiFj27xhhzH3AfWOGaIptTcMLgKXihu3ff3NzMsKMHc88rce55pWveeU2EzjTJ2mor9z2ZDnnJyGruX2Ntn9ymf2/4/dsdnTeMG57bx9STa6xSBWOidCRg0YY4HQmY9rkoI37ayuNf783iTR185thjeOnPqzvDNm7iufkPD5HIkPNfSNwydLrT/XzcUibdYvKlVD+pO4V4mgjDSNygPfkm4OiUz0fZyxSbMHgKuTBn9iyuHBvFzPlU5+tfxkWpiUCk3+EcdvLZHGJVG2DllL5sbkl0pkP2isA3TqymT9Ty0l+Y3Iefv3qAe16JI7fs5uevHmDGeOvLN5/Zi0dej9M7ArVR+PGfD/BeS4IFr8T51omwrekDRo44obNapZPn2t66i9jGFZ1ZQaXgzTtl6DjR/XzcPOAfThxV8vWTikG5VIhNR9Adr9VYHa9fxhL3V4B/NsZsdNq+Ejteh818Bqf/QNizBA4/tB+7drf1WD5o0EDqp/4XG38yiYuHC4f0EhacX8sNz+1DBO6Y0Jtrnonx6OtxTji8itOHWA+jC9cd4JhDq3h7V4LJJ0dZcH4tzXsSnLVwL58/qopfb2wnGoH2Dqiphv3tsLcdDquFjoT1tPDt71xDn7O/y6Mvf0C8dVdnjfn4K4u5JPJH7j430pkV5Ic370fN+eT3D62N0nagnXjHwdZUrrNblRLlMmtYUWeGEpGvAndhpVA+YIz5kdu2lSjylTArVHesSUOOY+PVkS6ZNhs3vYsxhjEnjeC8o2L89q04G6/p17lNajpk72pLnA1WeuX/XNWXL9zfhgH2d8ukibVbN82nJ9UycXGsMxXz6EMjNO/pYMXkvpz5UBtS3Ysjpz1AvNehtK5YQPuG56g64Sza33mJTd+N9rA128lKUpndsJ5HX/6gyw0+X/EohyyQcqQcrmtRZ4YyxjwLPBv0ccqVSpo0OVnS4MzTz2DyqKouHa6Xn2SYd9uttLa2smf3bnpVR5lyctdSw1efEuWXr8a5/596M6XB8uz7pJQvOHFAFSd9uorVTQlOGSQsfbODlVOsOjj/PKqa37/d0Tky9sqxUe5/Lc5Vn7M+Xz46yqot7TS99Bi9T7uE2IblvDS5ljMW/pEpY3plnDg8GxrWNPUQePCnNEAu3y0HESsmpV4hNhNF73itdHIZVl6uJEsaLF2ynY8+aePuP3ddP+T9pXz8tx1cfUqU325qZ3OL6VFquH9vuOPlA/SOWpUqk+UL1m1r592WBKcMjrCjLcFfdlZ11sGZOsaqXbPkjQNsvMZK1/z38b2479U4V4yJAnQWOmv/5A+Y+L7OGvM1VQkWrO5ZxGzYlqdyFvn5yzY5huig8B16DWuamP7rdcQTlkVNLTGm/3odEK6O/0pGJ/KuYArpwSVDNCsmVfHlRR0kEvDGd6q7hEC+/vVv8uSih9kVO9gmIwLRCLz7b1bYZm1zO194YC8Xf7a6S7x+1ZZ2xhwZ4ck3rFTL0x9o489X9eHkgdU070kw4p5WrhgT5a7zDnaYXfdsjJqIVeQM4NpnYry0JcHbH8Nfr6vttO34e+O88+57eYVnUnHrh4HCh+nG3PI8LbGek6PU1UZZO+fcgtmh5IdO5K30oNCpm6kFy751Ygert3YwyE6fGXRIFRcPT/DYY4/y1jUHR8SOuDeG6ejoUtNm4bp2Lh1ZTcOm9k6vfMb4GobdfYB12xOd4ZgrxkZZuK6dOwZaN5KIwN2r49y92j1dE6wYfvcZqaaMjqQNz2R7s3RLfxQoeJjOSeDTLVfKD/XkK5RCdvg6dbSmdqKCJbbfHlvDPedbXnXzngQn/LSVut5da9r0robLR0fpGxXuPK935/IpS/ey5M123rrOuaMWrPIIv51Uy8VPxDju+OGs2fBmFzuHzXyG7T+bQuyTv/U4h2FDnGvc5JJ94fQdAb5V4DLDAENdSicDvBfi7K6woZ58HoS1U6qQgzyc5nW94pQ+PFP9D9z13/cwcWw9xx5zFAsam1jQaHnVyfLBqemTxkB7wvDM2z3j9dZNouvo2SvGRPnV63G+Ndraz3XPxvj9O9aTwcJ1b/Wwc3BdLea7C3ssT3fjy6W2ein1w/TvE+0xCUpyuRIOVOTTEObRqH7URfeK27yutYe+1Hk9U73kpOd/85nWYJ/kZCEdxrkYWY09JmhBY5wFjV0Fq1cEvnOKJVg3nWHVlX9hci2Pv1XNtm3busTZc8l0yvVmmczYSDoRNzy+lvnLNhVc7OdcMJLpT67rkl8fjQhzLhhZMBuUYFGRT0MQM+CUCoVM3UwKuFOIyOl6Onr+Y2r45ZqumTZghVEANn/Q1MX7T3Lds7EusfnJo61Y/eRRNT3i7Ll42NncLLs/FZ41YkCXUgLFcCJK6alCCQaNyach7KNRCx2K8no93UoVu8XFM32vezni5OdM+/OC15i8Wxze6XqEeSCcEgwak8+RQoY0ikGhB3l4vZ65TuJhJv2cw1cs4JLIH7nnvINN+9rn2nm84yw+euV3rvtInXs2m1RJr56w01NhqeTKK+FGRT4NlTQatRAEcT0b1jQxfeGfaHrkRg6fNJ+9b69mwSc9By/167/aeQc2qXPPZjvIKdPNsmFNk6eKkUnqtNNT8REV+TRovNJfgrie85dt4uNVj1Kzdwex1Yv5tEN2TDJ84kZyTtoVl/fmnIUPMuP7N/s28CkZpsmG1n3tNKxp0nam+ILG5JWy5ujrHmHX/d/mpclRTn+kncOu/CWRfv0BK+bt5UaSOietn1UmwX08AmCXCjbE4oke6zQur2RDuph80PXkFSVQqtY+2VlnZuroCLHViwFLJDfPPZ9VM89OK/BJL37GadbnGafha834dPH12y8axT4Hgc/0PUXJBhV5pWxpbm7mk7XPM3u81Yxnj68itnE50f2feI7zO6VrTh5llTHwA7dO+vq6WiaOrQ/FpBRKaaMir5Qt8267lSvGVHcR6KmjI4zc/rzneLbT3LN3rWql4amnfLHRaQan1M7mTOuDoBLmFFYOoh2vStniNpJ2WPNyz/vIN08+E5k6m7PpjPZjXEOYR3ErzmjHq6KUKKmiXtcnSuu+9s6675DbTFKVOBNZJaCDoZSCEdaCboWmu8ftVEQslxIbhSxMp5QGKvKKb2gowD+cRsg6ka045zKKW2/c5Y12vCq+ka6gm5IdXsU72yycbDt6kzfuppYYhoM3bu2sLR9U5BXf0FCAf3gR71yycCaOref2i0ZRX1eLYMXi08X19cZd/gQWrhGRHwBXAzvtRd83xjwb1PGU4hP2gm6FxKnOTzQi9K2p5pNYPK+wSTaF6fTGXf4EHZO/0xjz44CPoZQIWtDNP0qlbpLeuMsf7XhVfKNUhCksFLoUtBN64y5/AsuTt8M1U4HdQCNwozHmY4ftpgHTAIYMGXLK+++/H4g9iqLkhmbXlD7p8uTzEnkRWQ441WS9CXgZ+AhrboRbgUHGmCvT7U8HQymKomRPYIOhjDHneDTgF4D7tDyKoqRFvWklV4LMrhlkjGm2P34N2BDUsRQlzOggMyUfgsyTnyci60XkdeAs4IYAj6UooUVz1ZV8CMyTN8ZcHtS+FaWS0Fx1JR90xKuilDg6sYiSDyryilLiFGNiESU86GAoRSlxdJCZkg8q8opSBpTC6FelPNFwjaIoSohRkVcURQkxKvKKoighRkVeURQlxKjIK4qihBgVeUVRlBCjIq8oihJiVOQVRVFCjIq8oihKiFGRVxRFCTEq8oqiKCFGRV5RFCXEqMgriqKEGBV5RVGUEKMiryiKEmJU5BVFUUKMiryiKEqIyUvkReQbIrJRRBIiMq7bulki8o6IbBKRCfmZqSiKouRCvtP/bQAuAn6eulBETgQuBUYCg4HlInKCMaYjz+MpiqIoWZCXyBtj3gAQke6rLgQWG2P2A5tF5B3gVOB/8jmeoiiKFxrWNOnE5zZBxeTrgS0pn7fay3ogItNEpFFEGnfu3BmQOYqiVAoNa5qYtWQ9TS0xDNDUEmPWkvU0rGkqtmlFIaPIi8hyEdng8LrQDwOMMfcZY8YZY8YNGDDAj10qilLBzF+2iVi8a2Q4Fu9g/rJNRbKouGQM1xhjzslhv03A0Smfj7KXKYqiBMqHLbGsloedoMI1TwOXikgvERkGHA/8b0DHUhRF6WRwXW1Wy8NOvimUXxORrcDfA8+IyDIAY8xG4AngL8BzwLWaWaMoSiGYPmE4tdFIl2W10QjTJwwvkkXFJd/smqXAUpd1PwJ+lM/+FaXU0KyN0if5/9D/k0W+efKKUjEkszaSnXrJrA2gYgWkVJk4tl7/JzZa1kBRPKJZG0o5oiKvKB7RrA2lHFGRVxSPaNaGUo6oyCuKRzRrQylHtONVUTyiWRtKOaIiryhZoFkbSrmh4RpFUZQQoyKvKIoSYlTkFUVRQoyKvKIoSohRkVcURQkxYowptg2diMhO4H0Pmx4BfBSwOX6i9gaL2hssam+w+GHvMcYYx1mXSkrkvSIijcaYccW2wytqb7CovcGi9gZL0PZquEZRFCXEqMgriqKEmHIV+fuKbUCWqL3BovYGi9obLIHaW5YxeUVRFMUb5erJK4qiKB5QkVcURQkxZSXyIvINEdkoIgkRGZeyfKiIxERkrf36WTHtTOJmr71uloi8IyKbRGRCsWx0Q0R+ICJNKdf0q8W2qTsicp59/d4RkZnFtscLIvKeiKy3r2ljse3pjog8ICI7RGRDyrLDROQPIvK2/bd/MW1MxcXekmy7InK0iKwUkb/YuvB/7OWBXt+yEnlgA3AR8KLDur8aY8bYr+8W2C43HO0VkROBS4GRwHnAAhGJ9Px60bkz5Zo+W2xjUrGv1z3AV4ATgUn2dS0HzrKvaSnmcj+E1SZTmQmsMMYcD6ywP5cKD9HTXijNttsO3GiMORH4PHCt3WYDvb5lJfLGmDeMMWUza3Iaey8EFhtj9htjNgPvAKcW1rqy51TgHWPMu8aYA8BirOuq5IEx5kVgV7fFFwIL7fcLgYmFtCkdLvaWJMaYZmPMa/b7PcAbQD0BX9+yEvkMDBORNSLyJxE5o9jGZKAe2JLyeau9rNS4TkRetx+JS+YR3aZcrmF3DPC8iLwqItOKbYxHjjTGNNvvtwFHFtMYj5Ry20VEhgJjgdUEfH1LTuRFZLmIbHB4pfPSmoEhxpixwPeAx0TkUyVsb0mQwfZ7geOAMVjX9yfFtDVEnG6M+RxWmOlaETmz2AZlg7Fyrks977qk266I9AN+A1xvjNmdui6I61ty0/8ZY87J4Tv7gf32+1dF5K/ACUDgHVu52As0AUenfD7KXlZQvNouIr8AfhewOdlSEtcwW4wxTfbfHSKyFCvs5NTHVEpsF5FBxphmERkE7Ci2QekwxmxPvi+1tisiUSyBf9QYs8ReHOj1LTlPPhdEZECy41JEjgWOB94trlVpeRq4VER6icgwLHv/t8g2dcFubEm+htWJXEq8AhwvIsNEpAarI/vpItuUFhHpKyKHJN8D51J619WJp4Ep9vspwFNFtCUjpdp2RUSA+4E3jDF3pKwK9voaY8rmhfUP24rltW8HltnLLwY2AmuB14ALim1rOnvtdTcBfwU2AV8ptq0Otj8CrAdetxvhoGLb5GDjV4G37Ot4U7Ht8WDvscA6+7WxFG0GFmGFOOJ2270KOBwr6+NtYDlwWLHtzGBvSbZd4HSsUMzrtlattdtwoNdXyxooiqKEmFCEaxRFURRnVOQVRVFCjIq8oihKiFGRVxRFCTEq8oqiKCFGRV5RFCXEqMgriqKEmP8PZy7bOCxWbGUAAAAASUVORK5CYII=
+"
+>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 使用神经网络进行拟合，使用网格搜索确定最优参数</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>
+<span class="c1"># 设定参数组合 5*5=25个组合</span>
+<span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;hidden_layer_sizes&quot;</span><span class="p">:[(</span><span class="mi">50</span><span class="p">,),</span> <span class="p">(</span><span class="mi">100</span><span class="p">,),</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">),</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">100</span><span class="p">),</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">50</span><span class="p">)],</span>
+       <span class="s2">&quot;alpha&quot;</span><span class="p">:[</span><span class="mf">0.0001</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]}</span>
+<span class="n">grid</span><span class="o">=</span><span class="n">GridSearchCV</span><span class="p">(</span><span class="n">MLPClassifier</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">3000</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">38</span><span class="p">),</span>
+                 <span class="n">param_grid</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="c1"># 拟合</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train_scaled</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span> <span class="c1">#耗时 60s</span>
+
+<span class="c1"># 打分</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;best score:</span><span class="si">{:0.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">best_score_</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;best params_:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">best_params_</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">test score:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test_scaled</span><span class="p">,</span> <span class="n">y_test</span><span class="p">))</span> <span class="p">)</span>
+
+<span class="c1"># 这个过程其实是错误的。</span>
+<span class="c1">#   因为我们对 X_train做的标准化fit，</span>
+<span class="c1">#   而GridSearchCV时传入的是X_train_scaled，对该数据有切分为 train 和 validation 2部分，内部按照 validation 最高分输出的参数组合。</span>
+<span class="c1">#   而外部，我们使用该参数组合 MLP fit 是相对于X_train_scaled，对 X_test_scaled 做 prediction 打分。</span>
+<span class="c1">#   内部 scaler fit 应该对 内部的train，而不能是对数据总体。</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>best score:0.747
+best params_:{&#39;alpha&#39;: 1, &#39;hidden_layer_sizes&#39;: (100,)}
+
+test score:0.76
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E7%AE%A1%E9%81%93%E6%A8%A1%E5%9E%8B">&#31649;&#36947;&#27169;&#22411;<a class="anchor-link" href="#%E7%AE%A1%E9%81%93%E6%A8%A1%E5%9E%8B">&#182;</a></h2>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 每次划分都要手动预处理，需要做参数组合数次，太麻烦。</span>
+
+<span class="c1"># Pipeline 能起到形式简化的作用</span>
+<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
+
+<span class="c1"># 在流水线上安装2个设备，一个数据预处理的 StandardScaler， 一个最大迭代次数1600的MLP多层感知神经网络。</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span> 
+                     <span class="p">(</span><span class="s1">&#39;mlp&#39;</span><span class="p">,</span> <span class="n">MLPClassifier</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">1600</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">38</span><span class="p">))])</span>
+<span class="c1"># 使用管道模型对训练集进行拟合</span>
+<span class="n">pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="c1"># 对测试集打分</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;test score:</span><span class="si">{:0.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pipeline</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)))</span> <span class="c1">#0.880</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>test score:0.760
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E4%BD%BF%E7%94%A8%E7%AE%A1%E9%81%93%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E7%BD%91%E6%A0%BC%E6%90%9C%E7%B4%A2">&#20351;&#29992;&#31649;&#36947;&#27169;&#22411;&#36827;&#34892;&#32593;&#26684;&#25628;&#32034;<a class="anchor-link" href="#%E4%BD%BF%E7%94%A8%E7%AE%A1%E9%81%93%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E7%BD%91%E6%A0%BC%E6%90%9C%E7%B4%A2">&#182;</a></h2>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 注意：参数加上管道中工具的前缀，中间使用双下划线__连接。</span>
+<span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;mlp__hidden_layer_sizes&quot;</span><span class="p">:[(</span><span class="mi">50</span><span class="p">,),</span> <span class="p">(</span><span class="mi">100</span><span class="p">,),</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">),</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">100</span><span class="p">),</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">50</span><span class="p">)],</span> <span class="c1">#</span>
+       <span class="s2">&quot;mlp__alpha&quot;</span><span class="p">:[</span><span class="mf">0.0001</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]}</span>
+<span class="n">grid</span><span class="o">=</span><span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">param_grid</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="c1"># 拟合</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span> <span class="c1">#耗时 60s</span>
+
+<span class="c1"># 打分</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;best score:</span><span class="si">{:0.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">best_score_</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;best params_:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">best_params_</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">test score:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">))</span> <span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>best score:0.733
+best params_:{&#39;mlp__alpha&#39;: 0.0001, &#39;mlp__hidden_layer_sizes&#39;: (100,)}
+
+test score:0.76
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 检查步骤</span>
+<span class="n">pipeline</span><span class="o">.</span><span class="n">steps</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>[(&#39;scaler&#39;, StandardScaler()),
+ (&#39;mlp&#39;, MLPClassifier(max_iter=1600, random_state=38))]</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="%E4%BD%BF%E7%94%A8%E7%AE%A1%E9%81%93%E6%A8%A1%E5%9E%8B%E5%AF%B9%E8%82%A1%E7%A5%A8%E6%B6%A8%E5%B9%85%E8%BF%9B%E8%A1%8C%E5%9B%9E%E5%BD%92%E5%88%86%E6%9E%90">&#20351;&#29992;&#31649;&#36947;&#27169;&#22411;&#23545;&#32929;&#31080;&#28072;&#24133;&#36827;&#34892;&#22238;&#24402;&#20998;&#26512;<a class="anchor-link" href="#%E4%BD%BF%E7%94%A8%E7%AE%A1%E9%81%93%E6%A8%A1%E5%9E%8B%E5%AF%B9%E8%82%A1%E7%A5%A8%E6%B6%A8%E5%B9%85%E8%BF%9B%E8%A1%8C%E5%9B%9E%E5%BD%92%E5%88%86%E6%9E%90">&#182;</a></h1>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E4%B8%8B%E8%BD%BD%E6%95%B0%E6%8D%AE">&#19979;&#36733;&#25968;&#25454;<a class="anchor-link" href="#%E4%B8%8B%E8%BD%BD%E6%95%B0%E6%8D%AE">&#182;</a></h2>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[1]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># (1) 获取原始json数据</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="n">timestamp</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">*</span><span class="mi">1000</span><span class="p">))</span>
+<span class="n">begin</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">end</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="mi">2060</span><span class="p">)</span> <span class="c1">#1515</span>
+
+<span class="c1"># http://www.sse.com.cn/market/price/report/</span>
+<span class="n">url</span><span class="o">=</span><span class="s2">&quot;http://yunhq.sse.com.cn:32041/v1/sh1/list/exchange/equity?callback=jQuery111208015895779126387_1560941576071&amp;select=date%2Ccode%2Cname%2Copen%2Chigh%2Clow%2Clast%2Cprev_close%2Cchg_rate%2Cvolume%2Camount%2Ctradephase%2Cchange%2Camp_rate%2Ccpxxsubtype%2Ccpxxprodusta&amp;order=&amp;begin=&quot;</span><span class="o">+</span><span class="n">begin</span><span class="o">+</span><span class="s2">&quot;&amp;end=&quot;</span><span class="o">+</span><span class="n">end</span><span class="o">+</span><span class="s2">&quot;&amp;_=&quot;</span><span class="o">+</span><span class="n">timestamp</span><span class="p">;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;url=&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="s1">&#39;User-Agent&#39;</span><span class="p">:</span> <span class="s1">&#39;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.162 Safari/537.36&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;Referer&#39;</span><span class="p">:</span> <span class="s1">&#39;http://www.sse.com.cn/market/price/report/&#39;</span>
+<span class="p">}</span>
+
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span> <span class="c1">#, auth=(&#39;user&#39;, &#39;pass&#39;)</span>
+<span class="c1">#rs1=r.status_code #200</span>
+<span class="c1">#rs2=r.headers[&#39;content-type&#39;] #&#39;text/html; charset=utf-8&#39;</span>
+<span class="c1">#rs3=r.encoding #&#39;utf-8&#39; 编码，修改编码</span>
+<span class="n">rs4</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">text</span>
+<span class="c1">#r.json() #只有r.headers[&#39;content-type&#39;]为json时才能用。否则报错。</span>
+<span class="c1">#print(rs1,rs2,rs3,&quot;\n&quot;)</span>
+<span class="c1">#rs4 #现在是字符串格式</span>
+
+<span class="c1"># (2) 解析json格式为python数组</span>
+<span class="kn">import</span> <span class="nn">json</span><span class="o">,</span><span class="nn">re</span>
+<span class="c1">#json</span>
+<span class="n">rs</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;jQuery111208015895779126387_1560941576071\(&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">rs4</span><span class="p">)</span>
+<span class="n">rs</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\)$&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">rs</span><span class="p">)</span>
+<span class="n">rs</span><span class="o">=</span><span class="nb">eval</span><span class="p">(</span><span class="n">rs</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span> <span class="nb">len</span><span class="p">(</span><span class="n">rs</span><span class="p">[</span><span class="s1">&#39;list&#39;</span><span class="p">])</span> <span class="p">)</span>  <span class="c1">#25</span>
+
+<span class="c1"># (3) 注释每一列的字段名</span>
+<span class="c1"># select: code,name,open,high,low,last,prev_close,chg_rate,volume,amount,tradephase,change,amp_rate</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;date code,name,open,high,low,last,prev_close,chg_rate,volume,amount,tradephase,change,amp_rate cpxxsubtype cpxxprodusta&#39;</span><span class="p">)</span>
+<span class="n">titles</span><span class="o">=</span><span class="s1">&#39;date,code,name,open,high,low,last,prev_close,chg_rate,volume,amount,tradephase,change,amp_rate,cpxxsubtype,cpxxprodusta&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+
+<span class="c1">#data</span>
+<span class="n">alists</span><span class="o">=</span><span class="n">rs</span><span class="p">[</span><span class="s1">&#39;list&#39;</span><span class="p">]</span>
+<span class="c1">#len(alist) #1515</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">alists</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="n">alist</span><span class="o">=</span><span class="n">alists</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">titles</span><span class="p">)):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">titles</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="n">alist</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">alists2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">alists</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">alists2</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="c1">#(2052, 16)</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="n">stock</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">alists2</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">titles</span><span class="p">)</span>
+
+<span class="n">stock</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">stock</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">/</span><span class="mi">10000</span> <span class="c1">#单位 万元</span>
+<span class="n">stock</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">stock</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">/</span><span class="mi">100</span> <span class="c1"># 单位 手</span>
+
+<span class="n">stock</span><span class="p">[</span><span class="s1">&#39;chg_rate&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">stock</span><span class="p">[</span><span class="s1">&#39;chg_rate&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)</span>
+<span class="n">stock</span><span class="p">[</span><span class="s1">&#39;last&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">stock</span><span class="p">[</span><span class="s1">&#39;last&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)</span>
+
+<span class="n">stock</span><span class="p">[</span><span class="s1">&#39;amp_rate&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">stock</span><span class="p">[</span><span class="s1">&#39;amp_rate&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)</span>
+
+<span class="n">stock</span><span class="p">[</span><span class="s1">&#39;open&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">stock</span><span class="p">[</span><span class="s1">&#39;open&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)</span>
+<span class="n">stock</span><span class="p">[</span><span class="s1">&#39;high&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">stock</span><span class="p">[</span><span class="s1">&#39;high&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)</span>
+<span class="n">stock</span><span class="p">[</span><span class="s1">&#39;low&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">stock</span><span class="p">[</span><span class="s1">&#39;low&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)</span>
+
+<span class="n">stock</span><span class="p">[</span><span class="s1">&#39;prev_close&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">stock</span><span class="p">[</span><span class="s1">&#39;prev_close&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)</span>
+<span class="n">stock</span><span class="p">[</span><span class="s1">&#39;high&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">stock</span><span class="p">[</span><span class="s1">&#39;high&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)</span>
+
+<span class="n">stock</span><span class="p">[</span><span class="s1">&#39;change&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">stock</span><span class="p">[</span><span class="s1">&#39;change&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)</span>
+
+<span class="n">stock</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+
+<span class="c1"># 涨跌幅 chg_rate(%)</span>
+<span class="c1"># 振幅 amp_rate</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>url= http://yunhq.sse.com.cn:32041/v1/sh1/list/exchange/equity?callback=jQuery111208015895779126387_1560941576071&amp;select=date%2Ccode%2Cname%2Copen%2Chigh%2Clow%2Clast%2Cprev_close%2Cchg_rate%2Cvolume%2Camount%2Ctradephase%2Cchange%2Camp_rate%2Ccpxxsubtype%2Ccpxxprodusta&amp;order=&amp;begin=0&amp;end=2060&amp;_=1637155887391
+2053
+date code,name,open,high,low,last,prev_close,chg_rate,volume,amount,tradephase,change,amp_rate cpxxsubtype cpxxprodusta
+[20211117, &#39;600000&#39;, &#39;浦发银行&#39;, 8.67, 8.72, 8.65, 8.65, 8.73, -0.92, 19301599, 167446824, &#39;E110&#39;, -0.08, 0.8, &#39;ASH&#39;, &#39;   D  F  N          &#39;]
+0 date = 20211117
+1 code = 600000
+2 name = 浦发银行
+3 open = 8.67
+4 high = 8.72
+5 low = 8.65
+6 last = 8.65
+7 prev_close = 8.73
+8 chg_rate = -0.92
+9 volume = 19301599
+10 amount = 167446824
+11 tradephase = E110
+12 change = -0.08
+13 amp_rate = 0.8
+14 cpxxsubtype = ASH
+15 cpxxprodusta =    D  F  N          
+(2053, 16)
+</pre>
+</div>
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[1]:</div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>date</th>
+      <th>code</th>
+      <th>name</th>
+      <th>open</th>
+      <th>high</th>
+      <th>low</th>
+      <th>last</th>
+      <th>prev_close</th>
+      <th>chg_rate</th>
+      <th>volume</th>
+      <th>amount</th>
+      <th>tradephase</th>
+      <th>change</th>
+      <th>amp_rate</th>
+      <th>cpxxsubtype</th>
+      <th>cpxxprodusta</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>20211117</td>
+      <td>600000</td>
+      <td>浦发银行</td>
+      <td>8.67</td>
+      <td>8.72</td>
+      <td>8.65</td>
+      <td>8.65</td>
+      <td>8.73</td>
+      <td>-0.92</td>
+      <td>193015.99</td>
+      <td>16744.6824</td>
+      <td>E110</td>
+      <td>-0.08</td>
+      <td>0.80</td>
+      <td>ASH</td>
+      <td>D  F  N</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>20211117</td>
+      <td>600004</td>
+      <td>白云机场</td>
+      <td>12.38</td>
+      <td>12.52</td>
+      <td>12.30</td>
+      <td>12.40</td>
+      <td>12.39</td>
+      <td>0.08</td>
+      <td>82691.87</td>
+      <td>10249.4920</td>
+      <td>E110</td>
+      <td>0.01</td>
+      <td>1.78</td>
+      <td>ASH</td>
+      <td>D  F  N</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>20211117</td>
+      <td>600006</td>
+      <td>东风汽车</td>
+      <td>6.82</td>
+      <td>6.87</td>
+      <td>6.78</td>
+      <td>6.85</td>
+      <td>6.80</td>
+      <td>0.74</td>
+      <td>166517.32</td>
+      <td>11379.6372</td>
+      <td>E110</td>
+      <td>0.05</td>
+      <td>1.32</td>
+      <td>ASH</td>
+      <td>D  F  N</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>20211117</td>
+      <td>600007</td>
+      <td>中国国贸</td>
+      <td>14.56</td>
+      <td>14.61</td>
+      <td>14.33</td>
+      <td>14.39</td>
+      <td>14.62</td>
+      <td>-1.57</td>
+      <td>25977.16</td>
+      <td>3745.6189</td>
+      <td>E110</td>
+      <td>-0.23</td>
+      <td>1.92</td>
+      <td>ASH</td>
+      <td>D  F  N</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>20211117</td>
+      <td>600008</td>
+      <td>首创环保</td>
+      <td>3.15</td>
+      <td>3.18</td>
+      <td>3.14</td>
+      <td>3.17</td>
+      <td>3.15</td>
+      <td>0.63</td>
+      <td>614585.99</td>
+      <td>19445.9376</td>
+      <td>E110</td>
+      <td>0.02</td>
+      <td>1.27</td>
+      <td>ASH</td>
+      <td>D  F  N</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[2]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">X</span><span class="o">=</span><span class="n">stock</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;open&quot;</span><span class="p">:</span><span class="s2">&quot;amp_rate&quot;</span><span class="p">]</span>
+<span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;chg_rate&quot;</span><span class="p">,</span> <span class="s2">&quot;tradephase&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">y</span><span class="o">=</span><span class="n">stock</span><span class="p">[</span><span class="s2">&quot;chg_rate&quot;</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;size:&quot;</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>size: (2053, 9) (2053,)
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 从9列特征中预测涨幅, 使用MLP多层感知神经网络</span>
+
+<span class="c1"># 导入交叉验证</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">cross_val_score</span>
+<span class="c1"># 导入MLP神经网络回归</span>
+<span class="kn">from</span> <span class="nn">sklearn.neural_network</span> <span class="kn">import</span> <span class="n">MLPRegressor</span>
+<span class="n">scores</span><span class="o">=</span><span class="n">cross_val_score</span><span class="p">(</span><span class="n">MLPRegressor</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">38</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">800</span><span class="p">),</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mean score:</span><span class="si">{:0.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span> <span class="n">scores</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="p">)</span> 
+<span class="c1"># 这个打分怎么小于0呢？而且小这么多!?</span>
+<span class="c1"># 因为没有预处理，各个特征的极值差异过大。</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>mean score:-430.876
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E9%A2%84%E5%A4%84%E7%90%86%E5%92%8CMLP%E6%A8%A1%E5%9E%8B%E7%9A%84%E7%AE%A1%E9%81%93">&#39044;&#22788;&#29702;&#21644;MLP&#27169;&#22411;&#30340;&#31649;&#36947;<a class="anchor-link" href="#%E9%A2%84%E5%A4%84%E7%90%86%E5%92%8CMLP%E6%A8%A1%E5%9E%8B%E7%9A%84%E7%AE%A1%E9%81%93">&#182;</a></h2>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span><span class="p">,</span> <span class="n">make_pipeline</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">StandardScaler</span>
+
+<span class="c1"># 对比两种方法的语法</span>
+<span class="n">pipeline</span><span class="o">=</span><span class="n">Pipeline</span><span class="p">([</span> <span class="p">(</span><span class="s2">&quot;scaler&quot;</span><span class="p">,</span><span class="n">StandardScaler</span><span class="p">()),</span>
+                  <span class="p">(</span><span class="s2">&quot;mlp&quot;</span><span class="p">,</span> <span class="n">MLPRegressor</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">38</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span> <span class="p">)])</span>
+<span class="n">pipe</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">StandardScaler</span><span class="p">(),</span> <span class="n">MLPRegressor</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">38</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">800</span><span class="p">))</span>
+<span class="c1"># make_pipeline 看着更简洁。</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pipeline</span><span class="o">.</span><span class="n">steps</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pipe</span><span class="o">.</span><span class="n">steps</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>[(&#39;scaler&#39;, StandardScaler()), (&#39;mlp&#39;, MLPRegressor(max_iter=800, random_state=38))]
+[(&#39;standardscaler&#39;, StandardScaler()), (&#39;mlpregressor&#39;, MLPRegressor(max_iter=800, random_state=38))]
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 进行交叉验证</span>
+
+<span class="c1"># 这次评分是建立在管道模型pipe上，也就是数偶在交叉验证中，每次都会对数据集进行StandardScaler预处理，再拟合MLP回归模型。</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;mean score:</span><span class="si">{:0.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="p">)</span>
+<span class="c1"># 这个打分也不算多好，但至少正常点了。</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>mean score:0.720
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E6%B7%BB%E5%8A%A0%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9%E6%AD%A5%E9%AA%A4">&#28155;&#21152;&#29305;&#24449;&#36873;&#25321;&#27493;&#39588;<a class="anchor-link" href="#%E6%B7%BB%E5%8A%A0%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9%E6%AD%A5%E9%AA%A4">&#182;</a></h2>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 尝试使用随机森林模型，对数据集进行特征筛选。</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <span class="n">SelectFromModel</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestRegressor</span>
+<span class="n">pipe</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">StandardScaler</span><span class="p">(),</span>
+                    <span class="n">SelectFromModel</span><span class="p">(</span><span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">38</span><span class="p">)),</span>
+                    <span class="n">MLPRegressor</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">38</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">800</span><span class="p">))</span>
+<span class="n">pipe</span><span class="o">.</span><span class="n">steps</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>[(&#39;standardscaler&#39;, StandardScaler()),
+ (&#39;selectfrommodel&#39;,
+  SelectFromModel(estimator=RandomForestRegressor(random_state=38))),
+ (&#39;mlpregressor&#39;, MLPRegressor(max_iter=800, random_state=38))]</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 进行交叉验证</span>
+
+<span class="n">scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;mean score:</span><span class="si">{:0.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="p">)</span>
+
+<span class="c1"># 打分略有变化</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
+<pre>/home/wangjl/anaconda3/lib/python3.7/site-packages/sklearn/neural_network/_multilayer_perceptron.py:696: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (800) reached and the optimization hasn&#39;t converged yet.
+  ConvergenceWarning,
+</pre>
+</div>
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>mean score:0.725
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 查看每一步的属性，比如第二步选了哪些特征？</span>
+<span class="n">pipe</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">mask</span> <span class="o">=</span> <span class="n">pipe</span><span class="o">.</span><span class="n">named_steps</span><span class="p">[</span><span class="s2">&quot;selectfrommodel&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get_support</span><span class="p">()</span>
+<span class="n">mask</span> <span class="c1">#可见，只有最后2个特征被用于模型。</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>array([False, False, False, False, False, False, False,  True,  True])</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># true relation</span>
+
+<span class="nb">print</span><span class="p">(</span> <span class="n">X</span><span class="p">[</span><span class="s2">&quot;change&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">X</span><span class="p">[</span><span class="s2">&quot;prev_close&quot;</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span> <span class="o">-</span> <span class="n">stock</span><span class="p">[</span><span class="s1">&#39;chg_rate&#39;</span><span class="p">]</span> <span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>0       0.003620
+1       0.000710
+2      -0.004706
+3      -0.003187
+4       0.004921
+          ...   
+2048   -0.001634
+2049   -0.004177
+2050   -0.004074
+2051    0.000328
+2052   -0.002552
+Length: 2053, dtype: float64
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="%E7%AE%A1%E9%81%93%E8%BF%9B%E8%A1%8C%E6%A8%A1%E5%9E%8B%E9%80%89%E6%8B%A9%E5%92%8C%E5%8F%82%E6%95%B0%E8%B0%83%E4%BC%98">&#31649;&#36947;&#36827;&#34892;&#27169;&#22411;&#36873;&#25321;&#21644;&#21442;&#25968;&#35843;&#20248;<a class="anchor-link" href="#%E7%AE%A1%E9%81%93%E8%BF%9B%E8%A1%8C%E6%A8%A1%E5%9E%8B%E9%80%89%E6%8B%A9%E5%92%8C%E5%8F%82%E6%95%B0%E8%B0%83%E4%BC%98">&#182;</a></h1>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>要复用上述数据，所以接着运行。</p>
+
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E6%A8%A1%E5%9E%8B%E9%80%89%E6%8B%A9">&#27169;&#22411;&#36873;&#25321;<a class="anchor-link" href="#%E6%A8%A1%E5%9E%8B%E9%80%89%E6%8B%A9">&#182;</a></h2>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 目的: 看看 随机森林好， 还是 MLP 多层感知神经网络好。而MLP需要数据预处理。</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>
+
+<span class="c1"># 定义参数</span>
+<span class="n">params</span><span class="o">=</span><span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;reg&quot;</span><span class="p">:[</span><span class="n">MLPRegressor</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">38</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">)],</span>
+        <span class="s2">&quot;scaler&quot;</span><span class="p">:[</span><span class="n">StandardScaler</span><span class="p">(),</span> <span class="kc">None</span><span class="p">]},</span>
+    
+    <span class="p">{</span><span class="s2">&quot;reg&quot;</span><span class="p">:[</span><span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">38</span><span class="p">)],</span>
+       <span class="s2">&quot;scaler&quot;</span><span class="p">:[</span><span class="kc">None</span><span class="p">]}</span>
+<span class="p">]</span>
+<span class="c1"># 实例化</span>
+<span class="n">pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s2">&quot;scaler&quot;</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span> <span class="p">(</span><span class="s2">&quot;reg&quot;</span><span class="p">,</span> <span class="n">MLPRegressor</span><span class="p">())])</span>
+<span class="n">grid</span><span class="o">=</span><span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="c1"># 拟合数据</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="c1"># 打分</span>
+<span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;best model:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span> <span class="n">grid</span><span class="o">.</span><span class="n">best_params_</span><span class="p">)</span> <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;best score:</span><span class="si">{:0.2f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">best_score_</span><span class="p">)</span> <span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>best model:{&#39;reg&#39;: RandomForestRegressor(random_state=38), &#39;scaler&#39;: None}
+best score:0.88
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E5%8F%82%E6%95%B0%E8%B0%83%E4%BC%98">&#21442;&#25968;&#35843;&#20248;<a class="anchor-link" href="#%E5%8F%82%E6%95%B0%E8%B0%83%E4%BC%98">&#182;</a></h2>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[11]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 在参数字典中增加 MLP 隐藏层 和随机森林中 estimator 数量的选项</span>
+<span class="n">params</span><span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;reg&quot;</span><span class="p">:[</span><span class="n">MLPRegressor</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">38</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">)],</span> 
+    <span class="s2">&quot;scaler&quot;</span><span class="p">:[</span><span class="n">StandardScaler</span><span class="p">(),</span> <span class="kc">None</span><span class="p">],</span>
+    <span class="s2">&quot;reg__hidden_layer_sizes&quot;</span><span class="p">:[(</span><span class="mi">50</span><span class="p">,),</span> <span class="p">(</span><span class="mi">100</span><span class="p">,),</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">)]},</span>
+    
+    <span class="p">{</span><span class="s2">&quot;reg&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">38</span><span class="p">)],</span>
+    <span class="s2">&quot;scaler&quot;</span><span class="p">:[</span><span class="kc">None</span><span class="p">],</span>
+    <span class="s2">&quot;reg__n_estimators&quot;</span><span class="p">:[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">]}</span>
+<span class="p">]</span>
+
+<span class="c1"># 建立管道模型</span>
+<span class="n">pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s2">&quot;scaler&quot;</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+                <span class="p">(</span><span class="s2">&quot;reg&quot;</span><span class="p">,</span> <span class="n">MLPRegressor</span><span class="p">())])</span>
+<span class="c1"># 建立网格搜索</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="c1"># 拟合网格</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="c1"># 打分</span>
+<span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;best model:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span> <span class="n">grid</span><span class="o">.</span><span class="n">best_params_</span><span class="p">)</span> <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;best score:</span><span class="si">{:0.2f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">best_score_</span><span class="p">)</span> <span class="p">)</span>
+
+<span class="c1">#出现反转，最好的模型又变成了 多层神经网络。</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>best model:{&#39;reg&#39;: MLPRegressor(hidden_layer_sizes=(100, 100), max_iter=1000, random_state=38), &#39;reg__hidden_layer_sizes&#39;: (100, 100), &#39;scaler&#39;: StandardScaler()}
+best score:0.90
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[12]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">grid</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="c1">#训练集上的打分</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[12]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>0.98843420836218</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+</body>
+
+
+
+
+
+
+
+</html>
