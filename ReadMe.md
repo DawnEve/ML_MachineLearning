@@ -395,6 +395,8 @@ path: txtBlog/data/Math/
 - chapter 10 特征工程 [sklearn_featureSelection.html](/sklearn/sklearn_featureSelection.html)
 - chapter 11 模型评估与优化 [sklearn_CrossValidation.html](/sklearn/sklearn_CrossValidation.html)
 - chapter 12 建立算法的管道模型 [sklearn_Pipeline.html](/sklearn/sklearn_Pipeline.html)
+- chapter 13 自然语言处理 [sklearn_NLP.html](/sklearn/sklearn_NLP.html)
+- chapter 14 数据获取到话题提取 [sklearn_webSpider.html](/sklearn/sklearn_webSpider.html)
 
 
 
@@ -453,4 +455,11 @@ https://www.kaggle.com/c/titanic
 ## UCI datasets
 
 https://archive-beta.ics.uci.edu/ml/datasets
+
+
+
+
+## 文本数据
+
+- [Large Movie Review Dataset](http://ai.stanford.edu/~amaas/data/sentiment/)
 

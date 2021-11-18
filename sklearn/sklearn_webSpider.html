@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>sklearn_webSpider</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="/static/css/md_notebook.css" />
+
+
+<!-- Load mathjax -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML-full,Safe"> </script>
+    <!-- MathJax configuration -->
+    <script type="text/x-mathjax-config">
+    init_mathjax = function() {
+        if (window.MathJax) {
+        // MathJax loaded
+            MathJax.Hub.Config({
+                TeX: {
+                    equationNumbers: {
+                    autoNumber: "AMS",
+                    useLabelIds: true
+                    }
+                },
+                tex2jax: {
+                    inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                    displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+                    processEscapes: true,
+                    processEnvironments: true
+                },
+                displayAlign: 'center',
+                CommonHTML: {
+                    linebreaks: { 
+                    automatic: true 
+                    }
+                }
+            });
+        
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
+    }
+    init_mathjax();
+    </script>
+    <!-- End of mathjax configuration --></head>
+<body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
+
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>chapter 14 数据获取到话题提取: 爬虫(Requests/ bs4/ RegExp)</p>
+
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="%E7%AE%80%E5%8D%95%E9%A1%B5%E9%9D%A2%E7%9A%84%E7%88%AC%E5%8F%96">&#31616;&#21333;&#39029;&#38754;&#30340;&#29228;&#21462;<a class="anchor-link" href="#%E7%AE%80%E5%8D%95%E9%A1%B5%E9%9D%A2%E7%9A%84%E7%88%AC%E5%8F%96">&#182;</a></h1>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[1]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span> pip list <span class="p">|</span> grep -i request
+
+<span class="c1"># Rrequests 库是基于 urllib的，但是更好用。</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>requests                          2.25.1
+requests-oauthlib                 1.3.0
+requests-unixsocket               0.2.0
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E6%9F%A5%E8%AF%A2User-agent">&#26597;&#35810;User agent<a class="anchor-link" href="#%E6%9F%A5%E8%AF%A2User-agent">&#182;</a></h2>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[2]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># (1) 从网页复制</span>
+<span class="c1"># https://www.ip138.com/useragent/</span>
+<span class="c1"># Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36</span>
+
+<span class="c1"># (2) 从网页F12 复制</span>
+<span class="c1"># 打开百度，F12键-network，再F5刷新，随便选择一个加载内容，点header - Request，看其中内的 User-Agent:</span>
+<span class="n">UserAgent</span><span class="o">=</span><span class="s2">&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36&quot;</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E7%86%9F%E6%82%89%E7%BD%91%E7%AB%99%E7%BB%93%E6%9E%84">&#29087;&#24713;&#32593;&#31449;&#32467;&#26500;<a class="anchor-link" href="#%E7%86%9F%E6%82%89%E7%BD%91%E7%AB%99%E7%BB%93%E6%9E%84">&#182;</a></h2>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 政策-最新： http://www.gov.cn/zhengce/zuixin.htm</span>
+<span class="n">url</span><span class="o">=</span> <span class="s2">&quot;http://www.gov.cn/zhengce/content/2021-11/03/content_5648645.htm&quot;</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E7%88%AC%E5%8F%96%E5%B9%B6%E4%BF%9D%E5%AD%98%E5%88%B0%E6%9C%AC%E5%9C%B0">&#29228;&#21462;&#24182;&#20445;&#23384;&#21040;&#26412;&#22320;<a class="anchor-link" href="#%E7%88%AC%E5%8F%96%E5%B9%B6%E4%BF%9D%E5%AD%98%E5%88%B0%E6%9C%AC%E5%9C%B0">&#182;</a></h2>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
+<span class="n">headers</span><span class="o">=</span><span class="p">{</span>
+    <span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="n">UserAgent</span>
+<span class="p">}</span>
+
+<span class="c1"># 发起请求</span>
+<span class="n">r</span><span class="o">=</span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+<span class="c1">#print(r.text)# 主要内容乱码</span>
+
+<span class="c1">#打印编码方式</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">encoding</span><span class="p">)</span> <span class="c1">#ISO-8859-1</span>
+<span class="c1"># 而原网页正文写的是 charset=&quot;utf-8&quot; </span>
+
+<span class="c1"># 重新设置编码方式</span>
+<span class="n">r</span><span class="o">.</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;urf-8&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">encoding</span><span class="p">)</span> <span class="c1">#urf-8</span>
+<span class="c1">#print(r.text) #正常打印</span>
+<span class="c1"># 但是包含html标记，不需要它们。</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>ISO-8859-1
+urf-8
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 要么保存为 html</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;dustbin/test.html&quot;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+<span class="c1"># 要么解析其中的文本，保存为csv文件，见下文。</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="%E7%A8%8D%E5%BE%AE%E5%A4%8D%E6%9D%82%E7%9A%84%E7%88%AC%E8%99%AB">&#31245;&#24494;&#22797;&#26434;&#30340;&#29228;&#34411;<a class="anchor-link" href="#%E7%A8%8D%E5%BE%AE%E5%A4%8D%E6%9D%82%E7%9A%84%E7%88%AC%E8%99%AB">&#182;</a></h1>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>上面的例子其实降低了我们的效率，单个网址我们直接用浏览器看反而更高效。</p>
+<p>我们希望看到一个列表(部门，标题，链接)，大致判断感兴趣的内容，再点开看细节。怎么获得这样的列表呢？</p>
+
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>目标 最新政策 list 的爬取 url="<a href="http://www.gov.cn/zhengce/zuixin.htm">http://www.gov.cn/zhengce/zuixin.htm</a>"</p>
+<ul>
+<li>分析细节页面，打开该页面，F12查看，要闻列表</li>
+</ul>
+
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E7%AE%80%E4%BB%8B">&#27491;&#21017;&#34920;&#36798;&#24335;&#31616;&#20171;<a class="anchor-link" href="#%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E7%AE%80%E4%BB%8B">&#182;</a></h2>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[1]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>
+<span class="n">pattern</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;\d+&quot;</span><span class="p">)</span>
+
+<span class="n">rs1</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="s2">&quot;是数字吗0123&quot;</span><span class="p">)</span> <span class="c1"># match是从头匹配</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">rs1</span><span class="p">)</span>
+
+<span class="n">rs2</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="s2">&quot;456text78&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">rs2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">rs2</span><span class="o">.</span><span class="n">group</span><span class="p">())</span> <span class="c1">#使用 .group() 获取匹配的内容</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>None
+&lt;re.Match object; span=(0, 3), match=&#39;456&#39;&gt;
+456
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[2]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 如果想匹配中间的，可以用 re.search</span>
+<span class="n">rs1</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="s2">&quot;是数字吗0123&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">rs1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">rs1</span><span class="o">.</span><span class="n">group</span><span class="p">())</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">rs1</span><span class="o">.</span><span class="n">span</span><span class="p">())</span> <span class="c1">#使用 .span() 获取匹配的起始位置</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>&lt;re.Match object; span=(4, 8), match=&#39;0123&#39;&gt;
+0123
+(4, 8)
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">str1</span><span class="o">=</span><span class="s2">&quot;是数字吗0123&quot;</span>
+
+<span class="n">span</span><span class="o">=</span><span class="n">rs1</span><span class="o">.</span><span class="n">span</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">rs1</span><span class="o">.</span><span class="n">span</span><span class="p">())</span> <span class="c1">#(4, 8)</span>
+<span class="n">str1</span><span class="p">[</span><span class="n">span</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">span</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="c1">#&#39;0123&#39;</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>(4, 8)
+</pre>
+</div>
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[3]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>&#39;0123&#39;</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 使用数字分割字符串</span>
+<span class="n">rs3</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="s2">&quot;这是123一个1漂亮的3鼠标&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">rs3</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>[&#39;这是&#39;, &#39;一个&#39;, &#39;漂亮的&#39;, &#39;鼠标&#39;]
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 把所有的数字都提取出来</span>
+<span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="s2">&quot;这是123一个1漂亮的3鼠标&quot;</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>[&#39;123&#39;, &#39;1&#39;, &#39;3&#39;]</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E4%BD%BF%E7%94%A8-BeautiSoup-%E8%BF%9B%E8%A1%8C-html-%E8%A7%A3%E6%9E%90">&#20351;&#29992; BeautiSoup &#36827;&#34892; html &#35299;&#26512;<a class="anchor-link" href="#%E4%BD%BF%E7%94%A8-BeautiSoup-%E8%BF%9B%E8%A1%8C-html-%E8%A7%A3%E6%9E%90">&#182;</a></h2>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>python的两个解析html的库: lxml 和 BeautifulSoup。</p>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># $ pip3 install beautifulsoup4 -i https://pypi.douban.com/simple/</span>
+<span class="c1"># $ pip3 list | grep -i soup</span>
+<span class="c1">#beautifulsoup4                    4.10.0</span>
+<span class="c1"># $ pip3 list | grep -i xml</span>
+<span class="c1">#defusedxml                        0.7.1</span>
+<span class="c1">#lxml                              4.6.3</span>
+
+
+<span class="c1"># 下载html信息</span>
+<span class="n">url</span><span class="o">=</span> <span class="s2">&quot;http://www.gov.cn/zhengce/content/2021-11/03/content_5648645.htm&quot;</span>
+
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="n">headers</span><span class="o">=</span><span class="p">{</span>
+    <span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="s2">&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36&quot;</span>
+<span class="p">}</span>
+<span class="n">r</span><span class="o">=</span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+<span class="c1"># 重新设置编码方式</span>
+<span class="n">r</span><span class="o">.</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;urf-8&quot;</span>
+
+
+<span class="c1"># 解析html信息</span>
+<span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
+<span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="s1">&#39;lxml&#39;</span><span class="p">,</span> <span class="n">from_encoding</span><span class="o">=</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span> <span class="c1">#指定使用 lxml 库作为解析库，比自带的标准库快</span>
+<span class="c1">#print(soup)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
+<pre>/home/wangjl/anaconda3/lib/python3.7/site-packages/bs4/__init__.py:223: UserWarning: You provided Unicode markup but also provided a value for from_encoding. Your from_encoding will be ignored.
+  warnings.warn(&#34;You provided Unicode markup but also provided a value for from_encoding. Your from_encoding will be ignored.&#34;)
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 获取标题</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">soup</span><span class="o">.</span><span class="n">title</span><span class="p">)</span> <span class="c1">#带着 html 标签</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">soup</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">string</span><span class="p">)</span> <span class="c1">#去标签</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">soup</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">get_text</span><span class="p">())</span> <span class="c1">#或者</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>&lt;title&gt;国务院关于2020年度国家科学技术奖励的决定（国发〔2021〕22号）_政府信息公开专栏&lt;/title&gt;
+国务院关于2020年度国家科学技术奖励的决定（国发〔2021〕22号）_政府信息公开专栏
+国务院关于2020年度国家科学技术奖励的决定（国发〔2021〕22号）_政府信息公开专栏
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 获取段落</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">soup</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">string</span><span class="p">)</span>
+
+<span class="c1"># 怎么获取全部的段落？</span>
+<span class="n">texts</span><span class="o">=</span><span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;p&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">text</span><span class="o">.</span><span class="n">string</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span> <span class="c1">#过滤空白段</span>
+        <span class="k">continue</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">string</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>国务院关于2020年度
+国务院关于2020年度
+国家科学技术奖励的决定
+国发〔2021〕22号
+各省、自治区、直辖市人民政府，国务院各部委、各直属机构：
+为深入贯彻落实习近平新时代中国特色社会主义思想，全面贯彻党的十九大和十九届二中、三中、四中、五中全会精神，坚定实施科教兴国战略、人才强国战略和创新驱动发展战略，国务院决定，对为我国科学技术进步、经济社会发展、国防现代化建设作出突出贡献的科学技术人员和组织给予奖励。
+根据《国家科学技术奖励条例》的规定，经国家科学技术奖励评审委员会评审、国家科学技术奖励委员会审定和科技部审核，国务院批准并报请国家主席习近平签署，授予顾诵芬院士、王大中院士国家最高科学技术奖；国务院批准，授予“纳米限域催化”等2项成果国家自然科学奖一等奖，授予“面心立方材料弹塑性力学行为及原子层次机理研究”等44项成果国家自然科学奖二等奖，授予“超高清视频多态基元编解码关键技术”等3项成果国家技术发明奖一等奖，授予“良种牛羊卵子高效利用快繁关键技术”等58项成果国家技术发明奖二等奖，授予“嫦娥四号工程”等2项成果国家科学技术进步奖特等奖，授予“400万吨/年煤间接液化成套技术创新开发及产业化”等18项成果国家科学技术进步奖一等奖，授予“厘米级型谱化移动测量装备关键技术及规模化工程应用”等137项成果国家科学技术进步奖二等奖，授予苏·欧瑞莉教授等8名外国专家和国际热带农业中心中华人民共和国国际科学技术合作奖。
+全国科学技术工作者要向顾诵芬院士、王大中院士及全体获奖者学习，不忘初心、牢记使命，秉持国家利益和人民利益至上，继承和发扬老一辈科学家胸怀祖国、服务人民的优秀品质，主动肩负起历史重任，坚持创新在我国现代化建设全局中的核心地位，把科技自立自强作为国家发展的战略支撑，以与时俱进的精神、革故鼎新的勇气、坚忍不拔的定力，面向世界科技前沿、面向经济主战场、面向国家重大需求、面向人民生命健康，加快建设科技强国，为夺取全面建设社会主义现代化国家新胜利、实现中华民族伟大复兴作出新的更大贡献。
+国务院
+2021年10月19日
+（此件公开发布）
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 获取链接</span>
+<span class="n">link</span><span class="o">=</span><span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="c1">#最后的一个链接</span>
+<span class="n">link</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;href&#39;</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>&#39;http://www.gov.cn/home/2014-02/18/content_5046260.htm&#39;</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E7%88%AC%E5%8F%96%E6%96%B0%E9%97%BB%E7%9B%AE%E5%BD%95%E9%A1%B5%E9%9D%A2%E5%B9%B6%E4%BF%9D%E5%AD%98%E4%B8%BAcsv">&#29228;&#21462;&#26032;&#38395;&#30446;&#24405;&#39029;&#38754;&#24182;&#20445;&#23384;&#20026;csv<a class="anchor-link" href="#%E7%88%AC%E5%8F%96%E6%96%B0%E9%97%BB%E7%9B%AE%E5%BD%95%E9%A1%B5%E9%9D%A2%E5%B9%B6%E4%BF%9D%E5%AD%98%E4%B8%BAcsv">&#182;</a></h2>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span><span class="o">,</span> <span class="nn">csv</span><span class="o">,</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
+
+<span class="c1">#下载</span>
+<span class="n">url</span><span class="o">=</span><span class="s2">&quot;http://www.gov.cn/zhengce/zuixin.htm&quot;</span>
+<span class="n">user_agent</span><span class="o">=</span><span class="s2">&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36&quot;</span>
+
+<span class="n">policies</span><span class="o">=</span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="n">user_agent</span><span class="p">})</span>
+<span class="n">policies</span><span class="o">.</span><span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span>
+
+<span class="c1">#解析</span>
+<span class="n">p</span><span class="o">=</span><span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">policies</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="s1">&#39;lxml&#39;</span><span class="p">)</span>
+
+<span class="c1"># 用正则表达式匹配所有包含 content 的单词的a标签</span>
+<span class="n">contents</span> <span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">href</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;content&#39;</span><span class="p">))</span>
+
+<span class="c1"># 定义一个空列表</span>
+<span class="n">rows</span><span class="o">=</span><span class="p">[]</span>
+
+<span class="c1">#设计一个for循环，提取每个链接汇总的标题</span>
+<span class="k">for</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">contents</span><span class="p">:</span>
+    <span class="n">href</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;href&#39;</span><span class="p">)</span>
+    <span class="n">row</span><span class="o">=</span><span class="p">(</span><span class="n">content</span><span class="o">.</span><span class="n">string</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">content</span><span class="o">.</span><span class="n">string</span><span class="p">,</span> <span class="n">href</span><span class="p">)</span>
+    <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+
+<span class="c1"># 定义表头</span>
+<span class="n">header</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;发文部门&quot;</span><span class="p">,</span> <span class="s2">&quot;标题&quot;</span><span class="p">,</span> <span class="s2">&quot;链接&quot;</span><span class="p">]</span>
+<span class="c1"># 保存文件；原文 encoding=&#39;gb18030&#39;</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;dustbin/policies.csv&quot;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">writer</span><span class="o">=</span><span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+    <span class="n">writer</span><span class="o">.</span><span class="n">writerows</span><span class="p">(</span> <span class="n">rows</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;==done==&quot;</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>==done==
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[11]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># check</span>
+<span class="o">!</span>head -n <span class="m">3</span> dustbin/policies.csv
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>
+
+
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="%E5%AF%B9%E6%96%87%E6%9C%AC%E6%95%B0%E6%8D%AE%E8%BF%9B%E8%A1%8C%E8%AF%9D%E9%A2%98%E6%8F%90%E5%8F%96">&#23545;&#25991;&#26412;&#25968;&#25454;&#36827;&#34892;&#35805;&#39064;&#25552;&#21462;<a class="anchor-link" href="#%E5%AF%B9%E6%96%87%E6%9C%AC%E6%95%B0%E6%8D%AE%E8%BF%9B%E8%A1%8C%E8%AF%9D%E9%A2%98%E6%8F%90%E5%8F%96">&#182;</a></h1>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>当爬取的内容很多时，看着很花时间。能否快速了解几万字的核心内容呢？</p>
+<ul>
+<li>可以使用 “潜在地理克雷分布”(Latent Dirichlet Allocation)对文本做话题提取。</li>
+</ul>
+
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E4%B8%8B%E8%BD%BD%E5%A4%A7%E9%87%8F%E5%86%85%E5%AE%B9">&#19979;&#36733;&#22823;&#37327;&#20869;&#23481;<a class="anchor-link" href="#%E4%B8%8B%E8%BD%BD%E5%A4%A7%E9%87%8F%E5%86%85%E5%AE%B9">&#182;</a></h2>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[1]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 百度搜 段子，找到一个全是文本段子的网站。</span>
+
+<span class="kn">import</span> <span class="nn">requests</span><span class="o">,</span> <span class="nn">csv</span><span class="o">,</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
+
+<span class="n">user_agent</span><span class="o">=</span><span class="s2">&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36&quot;</span>
+
+<span class="c1"># 定义一个空列表</span>
+<span class="n">rows</span><span class="o">=</span><span class="p">[]</span>
+<span class="n">urls</span><span class="o">=</span><span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+    <span class="n">url</span><span class="o">=</span><span class="s2">&quot;http://www.duanziku.com/gaoxiaoduanzi/gxdz</span><span class="si">{}</span><span class="s2">.html&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">webpage</span><span class="o">=</span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="n">user_agent</span><span class="p">})</span>
+    <span class="n">webpage</span><span class="o">.</span><span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span>
+
+    <span class="c1">#解析</span>
+    <span class="n">p</span><span class="o">=</span><span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">webpage</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="s1">&#39;lxml&#39;</span><span class="p">)</span>
+
+    <span class="c1"># 用正则表达式匹配所有包含 gaoxiaoduanzi 的单词的a标签</span>
+    <span class="n">contents</span> <span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">href</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;gaoxiaoduanzi.*\d+\.html$&#39;</span><span class="p">))</span>
+
+    <span class="c1">#设计一个for循环，提取标题和链接</span>
+    <span class="k">for</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">contents</span><span class="p">:</span>
+        <span class="n">href</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;href&#39;</span><span class="p">)</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">content</span><span class="o">.</span><span class="n">string</span><span class="o">==</span><span class="kc">None</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">row</span><span class="o">=</span><span class="p">(</span><span class="n">content</span><span class="o">.</span><span class="n">string</span><span class="p">,</span> <span class="n">href</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">href</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">:</span>
+            <span class="k">continue</span><span class="p">;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">urls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">href</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">urls</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">5</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+            <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+<span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>(&#39;少小离家老大回，安能辨我是雌雄&#39;, &#39;http://www.duanziku.com/gaoxiaoduanzi/1532571462.html&#39;)
+(&#39;据说女人很喜欢这个笑话&#39;, &#39;http://www.duanziku.com/gaoxiaoduanzi/1532050935.html&#39;)
+(&#39;小明，你出去！（四）&#39;, &#39;http://www.duanziku.com/gaoxiaoduanzi/1532047928.html&#39;)
+(&#39;小明，你出去！（三）&#39;, &#39;http://www.duanziku.com/gaoxiaoduanzi/1532007455.html&#39;)
+</pre>
+</div>
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[1]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>65</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[2]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">getJoke</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="n">webpage</span><span class="o">=</span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="n">user_agent</span><span class="p">})</span>
+    <span class="n">webpage</span><span class="o">.</span><span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span>
+    <span class="n">p</span><span class="o">=</span><span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">webpage</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="s1">&#39;lxml&#39;</span><span class="p">)</span>
+    <span class="n">contents</span> <span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;span&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;font-size:16px;&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">contents</span><span class="o">==</span><span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="n">contents</span><span class="o">=</span><span class="n">contents</span><span class="o">.</span><span class="n">text</span>
+    
+    <span class="c1"># 去掉换行</span>
+    <span class="n">w</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\r\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">contents</span><span class="p">)</span>
+
+    <span class="c1"># 切分文本</span>
+    <span class="n">contents2</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">+&quot;</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+    <span class="c1"># 保存</span>
+    <span class="n">db</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">joke</span> <span class="ow">in</span> <span class="n">contents2</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">joke</span><span class="o">==</span><span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">joke</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;\d{1,2}[\.\、]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">joke</span><span class="p">)</span> <span class="c1">#去掉首数字</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">joke</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">db</span>
+<span class="c1"># test</span>
+<span class="n">getJoke</span><span class="p">(</span> <span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[2]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>[&#39;大学时不喜欢读书，跟上铺的哥们说，我最羡慕那些徒步旅行的驴友，想去那里就去那，真想来一次说走就走的徒步旅行，只可惜自己没钱买装备。上铺那哥们表示，他可以友情赞助我装备。然后，送给我一个碗……&#39;,
+ &#39;前两天跟我们组印度同事说认识他之后对印度有所改观，他大惊失色说“千万别，印度人里我是凤毛麟角，所有其他人都是傻哔。”&#39;,
+ &#39;当代人的肥胖问题需要得到重视了。据调查，地铁上每三次为孕妇让座的行为中，就有一次对方不是孕妇。&#39;]</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">getJoke2</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="n">webpage</span><span class="o">=</span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="n">user_agent</span><span class="p">})</span>
+    <span class="n">webpage</span><span class="o">.</span><span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span>
+    <span class="n">p</span><span class="o">=</span><span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">webpage</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="s1">&#39;lxml&#39;</span><span class="p">)</span>
+
+    <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;table&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">p</span><span class="o">==</span><span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="n">contents</span> <span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">contents</span><span class="o">==</span><span class="kc">None</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;broken page:&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="k">return</span><span class="p">;</span>
+    
+    <span class="n">db</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">contents</span><span class="p">:</span>
+        <span class="n">text2</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;\s+&quot;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text2</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">10</span> <span class="ow">or</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;[0-9]&quot;</span><span class="p">,</span><span class="n">text2</span><span class="p">)</span><span class="o">==</span><span class="kc">None</span><span class="p">:</span>
+            <span class="c1">#pass</span>
+            <span class="k">continue</span>
+        <span class="n">joke</span> <span class="o">=</span><span class="n">text2</span>
+        <span class="n">joke</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;\d{1,2}[\.\、]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">joke</span><span class="p">)</span> <span class="c1">#去掉首数字</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">joke</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">db</span>
+<span class="n">getJoke2</span><span class="p">(</span> <span class="n">rows</span><span class="p">[</span><span class="mi">6</span><span class="p">][</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[3]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>[&#39;某人求领导办事儿，拿出五张美女照片任其选一张:您中意哪个?领导看了看没说话，那人急了:您表个态呀!领导坏笑:你说穷人见到地上有五张百元大钞会捡哪张?&#39;,
+ &#39;楼主在外地，准备偷偷回去给老婆一个惊喜，就没告诉老婆自己买机票飞回去，到家已经半夜，开了房门借着昏暗的床头灯，发现老婆抱着一个男的在睡觉。我看了看，默默的走过去，扒下他的裤子，然后给他换了个尿片。&#39;,
+ &#39;一女生养了一只兔子，那个兔子这几天一直不吃萝卜，女生担心兔子生病，询问医生，医生回答：“兔子从来不吃有腥味的东西。”&#39;]</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="n">jokes</span><span class="o">=</span><span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)):</span>
+    <span class="c1">#print(i, len(jokes))</span>
+    <span class="n">url</span><span class="o">=</span><span class="n">rows</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    <span class="c1"># 获取页面并解析出文本</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">+</span> <span class="mf">2.5</span><span class="o">*</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">())</span>
+    <span class="n">db</span><span class="o">=</span><span class="n">getJoke</span><span class="p">(</span> <span class="n">url</span> <span class="p">)</span>
+    <span class="k">if</span> <span class="n">db</span><span class="o">==</span><span class="kc">None</span><span class="p">:</span>
+        <span class="n">db</span><span class="o">=</span><span class="n">getJoke2</span><span class="p">(</span> <span class="n">url</span> <span class="p">)</span>
+    <span class="k">if</span> <span class="n">db</span><span class="o">==</span><span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">db</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;broken:&quot;</span><span class="p">,</span> <span class="n">url</span> <span class="p">)</span>
+        <span class="k">continue</span>
+    <span class="k">for</span> <span class="n">joke</span> <span class="ow">in</span> <span class="n">db</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">joke</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">jokes</span><span class="p">:</span>
+            <span class="n">jokes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">joke</span><span class="p">)</span>
+<span class="c1"># 总数</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">jokes</span><span class="p">))</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>broken: http://www.duanziku.com/gaoxiaoduanzi/1532050935.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1531978794.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1528713026.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1448785704.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1448785868.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1442508453.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1418635654.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/201503232007.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1442847901.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1462873956.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1462626825.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1462626987.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1497323924.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1497323723.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1463061982.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1462874485.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1462874300.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1462873770.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1462873653.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1462803355.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1462627240.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1461593741.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1448786383.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1448786182.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1442845663.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1442510166.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1442509891.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1442509670.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1442507310.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1439563999.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1438967293.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1438965289.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/1438965012.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/20150303142501.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/20150303125028.html
+broken: http://www.duanziku.com/gaoxiaoduanzi/20150303124811.html
+411
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 保存到文件</span>
+<span class="n">fw</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;dustbin/jokes.txt&quot;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">joke</span> <span class="ow">in</span> <span class="n">jokes</span><span class="p">:</span>
+    <span class="n">fw</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">joke</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">fw</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E4%BD%BF%E7%94%A8-%E6%BD%9C%E5%9C%A8%E7%8B%84%E5%88%A9%E5%85%8B%E9%9B%B7%E5%88%86%E5%B8%83-%E8%BF%9B%E8%A1%8C%E8%AF%9D%E9%A2%98%E6%8F%90%E5%8F%96">&#20351;&#29992; &#28508;&#22312;&#29380;&#21033;&#20811;&#38647;&#20998;&#24067; &#36827;&#34892;&#35805;&#39064;&#25552;&#21462;<a class="anchor-link" href="#%E4%BD%BF%E7%94%A8-%E6%BD%9C%E5%9C%A8%E7%8B%84%E5%88%A9%E5%85%8B%E9%9B%B7%E5%88%86%E5%B8%83-%E8%BF%9B%E8%A1%8C%E8%AF%9D%E9%A2%98%E6%8F%90%E5%8F%96">&#182;</a></h2>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>潜在狄利克雷分布(Latent Dirichlet Allocation, LDA)是基于不同的词语共同出现的频率来进行分组的模型。</p>
+<ul>
+<li>比如，某个文档中，“妹子”“吃货”这2个词经常同时出现，LDA模型就会将2个词归入同一个话题(Topic)。</li>
+</ul>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 载入文件</span>
+<span class="n">fr</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;dustbin/jokes.txt&quot;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="n">lines</span><span class="o">=</span><span class="n">fr</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+<span class="n">line</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="c1">#把数组变成一个字符串</span>
+<span class="n">fr</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="p">)</span> <span class="c1">#411</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">))</span> <span class="c1">#23419</span>
+
+
+<span class="c1"># 分词</span>
+<span class="kn">import</span> <span class="nn">jieba</span>
+<span class="n">line2</span><span class="o">=</span><span class="n">jieba</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+<span class="n">x</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line2</span><span class="p">)</span>
+<span class="c1"># 保存</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;dustbin/cutjokes.txt&quot;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
+<pre>Building prefix dict from the default dictionary ...
+Loading model from cache /tmp/jieba.cache
+</pre>
+</div>
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>411
+23419
+</pre>
+</div>
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
+<pre>Loading model cost 0.451 seconds.
+Prefix dict has been built successfully.
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.feature_extraction.text</span> <span class="kn">import</span> <span class="n">TfidfVectorizer</span>
+<span class="c1"># 导入 LDA 模型</span>
+<span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="kn">import</span> <span class="n">LatentDirichletAllocation</span>
+
+<span class="c1"># 打印提取后的高频词</span>
+<span class="k">def</span> <span class="nf">print_topics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">feature_names</span><span class="p">,</span> <span class="n">n_top_words</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">topic_idx</span><span class="p">,</span> <span class="n">topic</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">components_</span><span class="p">):</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;topic #</span><span class="si">%d</span><span class="s2">:&quot;</span> <span class="o">%</span> <span class="n">topic_idx</span>
+        <span class="n">message</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span> <span class="n">feature_names</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">topic</span><span class="o">.</span><span class="n">argsort</span><span class="p">()[:</span><span class="o">-</span><span class="n">n_top_words</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+
+<span class="c1">#定义每个话题提取20个高频词</span>
+<span class="n">n_top_words</span><span class="o">=</span><span class="mi">20</span>
+<span class="c1"># tfidf 最大特征数 1000</span>
+<span class="n">tf</span><span class="o">=</span><span class="n">TfidfVectorizer</span><span class="p">(</span><span class="n">max_features</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># 载入分词处理过的文本文件</span>
+<span class="n">fr</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;dustbin/cutjokes.txt&quot;</span><span class="p">)</span>
+<span class="c1">#转化训练数据</span>
+<span class="n">X_train</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">fr</span><span class="p">)</span>
+<span class="n">fr</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="c1"># 指定 LDA 模型提取10个话题</span>
+<span class="n">lda</span><span class="o">=</span><span class="n">LatentDirichletAllocation</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">lda</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+
+<span class="n">print_topics</span><span class="p">(</span><span class="n">lda</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_feature_names_out</span><span class="p">(),</span> <span class="n">n_top_words</span> <span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>topic #0:东西 吃饭 妹子 不会 那么 睡觉 回家 损友 但是 不能 世界 真的 一定 起来 同事 媳妇 妈妈 他们 大家 早上
+topic #1:东西 吃饭 妹子 不会 那么 睡觉 回家 损友 但是 不能 世界 真的 一定 起来 同事 媳妇 妈妈 他们 大家 早上
+topic #2:东西 吃饭 妹子 不会 那么 睡觉 回家 损友 但是 不能 世界 真的 一定 起来 同事 媳妇 妈妈 他们 大家 早上
+topic #3:东西 吃饭 妹子 不会 那么 睡觉 回家 损友 但是 不能 世界 真的 一定 起来 同事 媳妇 妈妈 他们 大家 早上
+topic #4:老师 小明 一个 自己 我们 时候 什么 然后 不是 老公 因为 滚出去 为什么 老婆 就是 知道 发现 喜欢 哥们 同学
+topic #5:东西 吃饭 妹子 不会 那么 睡觉 回家 损友 但是 不能 世界 真的 一定 起来 同事 媳妇 妈妈 他们 大家 早上
+
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">topic_idx</span><span class="p">,</span> <span class="n">topic</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lda</span><span class="o">.</span><span class="n">components_</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">topic_idx</span><span class="p">,</span> <span class="s2">&quot;&gt;&gt;&gt;&quot;</span><span class="p">,</span> <span class="n">topic</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">])</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>0 &gt;&gt;&gt; [0.1666679  0.16666772 0.16666748 0.1666679  0.16666748 0.16666748]
+1 &gt;&gt;&gt; [0.1666679  0.16666772 0.16666748 0.1666679  0.16666748 0.16666748]
+2 &gt;&gt;&gt; [0.1666679  0.16666772 0.16666748 0.1666679  0.16666748 0.16666748]
+3 &gt;&gt;&gt; [0.1666679  0.16666772 0.16666748 0.1666679  0.16666748 0.16666748]
+4 &gt;&gt;&gt; [0.18359249 0.17936037 0.17512861 0.18359249 0.17512861 0.17512861]
+5 &gt;&gt;&gt; [0.1666679  0.16666772 0.16666748 0.1666679  0.16666748 0.16666748]
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">tmp</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">get_feature_names_out</span><span class="p">()</span>
+<span class="n">tmp</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>array([&#39;10&#39;, &#39;11&#39;, &#39;13&#39;, &#39;18&#39;, &#39;200&#39;, &#39;30g&#39;, &#39;886&#39;, &#39;dv&#39;, &#39;lz&#39;, &#39;u3000&#39;,
+       &#39;一下&#39;, &#39;一个&#39;, &#39;一二&#39;, &#39;一二一&#39;, &#39;一些&#39;, &#39;一件&#39;, &#39;一会&#39;, &#39;一会儿&#39;, &#39;一位&#39;, &#39;一分钱&#39;,
+       &#39;一半&#39;, &#39;一口&#39;, &#39;一句&#39;, &#39;一只&#39;, &#39;一块&#39;, &#39;一声&#39;, &#39;一天&#39;, &#39;一头&#39;, &#39;一定&#39;, &#39;一层&#39;, &#39;一巴掌&#39;,
+       &#39;一张&#39;, &#39;一日&#39;, &#39;一样&#39;, &#39;一次&#39;, &#39;一款&#39;, &#39;一毛&#39;, &#39;一毛钱&#39;, &#39;一波&#39;, &#39;一点&#39;, &#39;一瓶&#39;, &#39;一直&#39;,
+       &#39;一看&#39;, &#39;一眼&#39;, &#39;一种&#39;, &#39;一脸&#39;, &#39;一般&#39;, &#39;一起&#39;, &#39;一路&#39;, &#39;一身&#39;, &#39;一辆&#39;, &#39;一辈子&#39;, &#39;一针&#39;,
+       &#39;一顿&#39;, &#39;一颗&#39;, &#39;三个&#39;, &#39;三年级&#39;, &#39;三次&#39;, &#39;上学&#39;, &#39;上来&#39;, &#39;上班&#39;, &#39;上课&#39;, &#39;上铺&#39;, &#39;上面&#39;,
+       &#39;下午&#39;, &#39;下来&#39;, &#39;下班&#39;, &#39;下课&#39;, &#39;下雨&#39;, &#39;下面&#39;, &#39;不了&#39;, &#39;不介意&#39;, &#39;不会&#39;, &#39;不住&#39;, &#39;不到&#39;,
+       &#39;不吃&#39;, &#39;不够&#39;, &#39;不太好&#39;, &#39;不太对&#39;, &#39;不好&#39;, &#39;不好意思&#39;, &#39;不弃&#39;, &#39;不想&#39;, &#39;不敢&#39;, &#39;不是&#39;,
+       &#39;不用&#39;, &#39;不知&#39;, &#39;不离&#39;, &#39;不能&#39;, &#39;不行&#39;, &#39;不要&#39;, &#39;不要脸&#39;, &#39;不过&#39;, &#39;不错&#39;, &#39;专家&#39;, &#39;世上&#39;,
+       &#39;世界&#39;, &#39;世间&#39;, &#39;东西&#39;, &#39;东风&#39;, &#39;丝袜&#39;, &#39;两个&#39;, &#39;两人&#39;, &#39;两毛&#39;, &#39;两瓶&#39;, &#39;两种&#39;, &#39;严肃&#39;,
+       &#39;个人&#39;, &#39;中午&#39;, &#39;中国&#39;, &#39;为了&#39;, &#39;为什么&#39;, &#39;之前&#39;, &#39;之后&#39;, &#39;乌龟&#39;, &#39;九点&#39;, &#39;也好&#39;, &#39;书上&#39;,
+       &#39;书包&#39;, &#39;了解&#39;, &#39;事情&#39;, &#39;二年级&#39;, &#39;二月份&#39;, &#39;于是&#39;, &#39;五张&#39;, &#39;五毛&#39;, &#39;亲爱&#39;, &#39;人们&#39;, &#39;人家&#39;,
+       &#39;人民&#39;, &#39;人民币&#39;, &#39;人物&#39;, &#39;人生&#39;, &#39;人类&#39;, &#39;人缘&#39;, &#39;什么&#39;, &#39;今天&#39;, &#39;今年&#39;, &#39;今晚&#39;, &#39;介意&#39;,
+       &#39;他们&#39;, &#39;他家&#39;, &#39;以为&#39;, &#39;以前&#39;, &#39;以后&#39;, &#39;会装&#39;, &#39;伟大&#39;, &#39;传来&#39;, &#39;估计&#39;, &#39;但是&#39;, &#39;位置&#39;,
+       &#39;低声&#39;, &#39;体育&#39;, &#39;体育老师&#39;, &#39;何必&#39;, &#39;作为&#39;, &#39;你们&#39;, &#39;倒霉&#39;, &#39;做梦&#39;, &#39;停止&#39;, &#39;停车费&#39;,
+       &#39;偶像&#39;, &#39;偷偷&#39;, &#39;儿子&#39;, &#39;允许&#39;, &#39;兄弟&#39;, &#39;先生&#39;, &#39;兔子&#39;, &#39;全世界&#39;, &#39;全是&#39;, &#39;全班&#39;, &#39;全部&#39;,
+       &#39;八戒&#39;, &#39;公交车&#39;, &#39;公司&#39;, &#39;六年&#39;, &#39;关机&#39;, &#39;关键&#39;, &#39;其中&#39;, &#39;其实&#39;, &#39;内涵&#39;, &#39;再也&#39;, &#39;写道&#39;,
+       &#39;军训&#39;, &#39;农夫&#39;, &#39;冬天&#39;, &#39;冰棍&#39;, &#39;准备&#39;, &#39;减肥&#39;, &#39;几个&#39;, &#39;几天&#39;, &#39;几年&#39;, &#39;出去&#39;, &#39;出去玩&#39;,
+       &#39;出差&#39;, &#39;出来&#39;, &#39;出现&#39;, &#39;出门&#39;, &#39;出题&#39;, &#39;分手&#39;, &#39;分钟&#39;, &#39;刘邦&#39;, &#39;刚刚&#39;, &#39;别人&#39;, &#39;别的&#39;,
+       &#39;到手&#39;, &#39;制造&#39;, &#39;加油&#39;, &#39;动词&#39;, &#39;劫匪&#39;, &#39;包子&#39;, &#39;医生&#39;, &#39;十块钱&#39;, &#39;千万&#39;, &#39;千万别&#39;, &#39;半夜&#39;,
+       &#39;半天&#39;, &#39;卫生巾&#39;, &#39;印度&#39;, &#39;却是&#39;, &#39;历史&#39;, &#39;历史课&#39;, &#39;厉害&#39;, &#39;厕所&#39;, &#39;原则&#39;, &#39;反应&#39;, &#39;反正&#39;,
+       &#39;反驳&#39;, &#39;发型&#39;, &#39;发现&#39;, &#39;发现自己&#39;, &#39;叔叔&#39;, &#39;变得&#39;, &#39;变成&#39;, &#39;只是&#39;, &#39;只有&#39;, &#39;只能&#39;, &#39;只要&#39;,
+       &#39;只见&#39;, &#39;可以&#39;, &#39;可怜&#39;, &#39;可惜&#39;, &#39;可能&#39;, &#39;司机&#39;, &#39;吃掉&#39;, &#39;吃面&#39;, &#39;吃饭&#39;, &#39;各种&#39;, &#39;各自&#39;,
+       &#39;同事&#39;, &#39;同学&#39;, &#39;同桌&#39;, &#39;同行&#39;, &#39;名词&#39;, &#39;后悔&#39;, &#39;后来&#39;, &#39;后面&#39;, &#39;听到&#39;, &#39;听见&#39;, &#39;听说&#39;,
+       &#39;吵架&#39;, &#39;告诉&#39;, &#39;味道&#39;, &#39;呼吸&#39;, &#39;咋办&#39;, &#39;咱们&#39;, &#39;哈哈哈&#39;, &#39;哥们&#39;, &#39;哥哥&#39;, &#39;哪些&#39;, &#39;哪位&#39;,
+       &#39;哪里&#39;, &#39;唯一&#39;, &#39;啊啊啊&#39;, &#39;喜不喜欢&#39;, &#39;喜欢&#39;, &#39;喝酒&#39;, &#39;嘴上&#39;, &#39;嘴里&#39;, &#39;四个&#39;, &#39;回到&#39;,
+       &#39;回去&#39;, &#39;回复&#39;, &#39;回家&#39;, &#39;回来&#39;, &#39;回答&#39;, &#39;因为&#39;, &#39;因此&#39;, &#39;国旗&#39;, &#39;在家&#39;, &#39;地上&#39;, &#39;地库&#39;,
+       &#39;地方&#39;, &#39;地狱&#39;, &#39;地球&#39;, &#39;地说&#39;, &#39;坐在&#39;, &#39;块钱&#39;, &#39;垃圾桶&#39;, &#39;声音&#39;, &#39;夏天&#39;, &#39;外面&#39;, &#39;多久&#39;,
+       &#39;多少&#39;, &#39;多岁&#39;, &#39;多年&#39;, &#39;多钱&#39;, &#39;夜晚&#39;, &#39;大叔&#39;, &#39;大喊&#39;, &#39;大声&#39;, &#39;大姐&#39;, &#39;大学&#39;, &#39;大家&#39;,
+       &#39;大惊失色&#39;, &#39;大爷&#39;, &#39;天天&#39;, &#39;天气&#39;, &#39;太短&#39;, &#39;头发&#39;, &#39;奥特曼&#39;, &#39;女人&#39;, &#39;女儿&#39;, &#39;女友&#39;,
+       &#39;女士&#39;, &#39;女子&#39;, &#39;女孩&#39;, &#39;女方&#39;, &#39;女朋友&#39;, &#39;女生&#39;, &#39;奴隶&#39;, &#39;奶奶&#39;, &#39;好人&#39;, &#39;好吃&#39;, &#39;好多&#39;,
+       &#39;好奇&#39;, &#39;好好&#39;, &#39;好好学习&#39;, &#39;如果&#39;, &#39;妈呀&#39;, &#39;妈妈&#39;, &#39;妖怪&#39;, &#39;妹妹&#39;, &#39;妹子&#39;, &#39;妹纸&#39;, &#39;姐夫&#39;,
+       &#39;姐姐&#39;, &#39;姑姑&#39;, &#39;姑娘&#39;, &#39;姓名&#39;, &#39;委屈&#39;, &#39;婚礼&#39;, &#39;媳妇&#39;, &#39;孔子&#39;, &#39;孕妇&#39;, &#39;孙子&#39;, &#39;孙尚香&#39;,
+       &#39;孙敬&#39;, &#39;孤独&#39;, &#39;学会&#39;, &#39;学校&#39;, &#39;学渣&#39;, &#39;学生&#39;, &#39;学长&#39;, &#39;孩子&#39;, &#39;安心&#39;, &#39;安静&#39;, &#39;完后&#39;,
+       &#39;客人&#39;, &#39;室友&#39;, &#39;害怕&#39;, &#39;家里&#39;, &#39;容易&#39;, &#39;宿舍&#39;, &#39;寂寞&#39;, &#39;对不起&#39;, &#39;对方&#39;, &#39;对象&#39;, &#39;对面&#39;,
+       &#39;将来&#39;, &#39;小伙&#39;, &#39;小偷&#39;, &#39;小区&#39;, &#39;小孩&#39;, &#39;小强&#39;, &#39;小心&#39;, &#39;小时&#39;, &#39;小时候&#39;, &#39;小明&#39;, &#39;小混混&#39;,
+       &#39;小红&#39;, &#39;小花&#39;, &#39;尤其&#39;, &#39;就是&#39;, &#39;就算&#39;, &#39;就要&#39;, &#39;尼玛&#39;, &#39;居然&#39;, &#39;工作&#39;, &#39;工作人员&#39;, &#39;工资&#39;,
+       &#39;已经&#39;, &#39;希望&#39;, &#39;帮忙&#39;, &#39;干嘛&#39;, &#39;干预&#39;, &#39;年轻&#39;, &#39;幽幽&#39;, &#39;广告&#39;, &#39;床上&#39;, &#39;开口&#39;, &#39;开始&#39;,
+       &#39;开学&#39;, &#39;开心&#39;, &#39;开车&#39;, &#39;当成&#39;, &#39;当时&#39;, &#39;当然&#39;, &#39;形容&#39;, &#39;很多&#39;, &#39;徒步旅行&#39;, &#39;得到&#39;, &#39;微博&#39;,
+       &#39;心里&#39;, &#39;忍不住&#39;, &#39;忘记&#39;, &#39;快到&#39;, &#39;快播&#39;, &#39;怀孕&#39;, &#39;怀里&#39;, &#39;怎么&#39;, &#39;怎么办&#39;, &#39;总代&#39;, &#39;总是&#39;,
+       &#39;恋爱&#39;, &#39;恶心&#39;, &#39;情侣&#39;, &#39;情况&#39;, &#39;想要&#39;, &#39;意思&#39;, &#39;感冒&#39;, &#39;感觉&#39;, &#39;成语&#39;, &#39;我们&#39;, &#39;我会&#39;,
+       &#39;我妈&#39;, &#39;我家&#39;, &#39;我怕&#39;, &#39;我爸&#39;, &#39;我能&#39;, &#39;我要&#39;, &#39;或者&#39;, &#39;房门&#39;, &#39;所以&#39;, &#39;所有&#39;, &#39;手机&#39;,
+       &#39;手里&#39;, &#39;打开&#39;, &#39;打电话&#39;, &#39;打算&#39;, &#39;找到&#39;, &#39;抓住&#39;, &#39;抓起&#39;, &#39;报恩&#39;, &#39;抱住&#39;, &#39;抱怨&#39;, &#39;担心&#39;,
+       &#39;拖拉机&#39;, &#39;拥有&#39;, &#39;拿出&#39;, &#39;指着&#39;, &#39;挺住&#39;, &#39;损友&#39;, &#39;换个&#39;, &#39;掏出&#39;, &#39;掐指一算&#39;, &#39;排队&#39;,
+       &#39;接到&#39;, &#39;接着&#39;, &#39;接过&#39;, &#39;提问&#39;, &#39;播音员&#39;, &#39;改成&#39;, &#39;放假&#39;, &#39;放到&#39;, &#39;放在&#39;, &#39;放大镜&#39;, &#39;故意&#39;,
+       &#39;数学&#39;, &#39;数学老师&#39;, &#39;敲诈&#39;, &#39;敲门&#39;, &#39;新娘&#39;, &#39;新生&#39;, &#39;新郎&#39;, &#39;旁边&#39;, &#39;无奈&#39;, &#39;无聊&#39;, &#39;日本&#39;,
+       &#39;早上&#39;, &#39;早餐&#39;, &#39;早饭&#39;, &#39;时候&#39;, &#39;时间&#39;, &#39;明天&#39;, &#39;明白&#39;, &#39;明说&#39;, &#39;昨天&#39;, &#39;昨晚&#39;, &#39;是不是&#39;,
+       &#39;是因为&#39;, &#39;晕倒&#39;, &#39;晚上&#39;, &#39;智慧&#39;, &#39;暧昧&#39;, &#39;曾经&#39;, &#39;最后&#39;, &#39;最少&#39;, &#39;最终&#39;, &#39;最近&#39;, &#39;月饼&#39;,
+       &#39;有个&#39;, &#39;有些&#39;, &#39;有人&#39;, &#39;有次&#39;, &#39;有点&#39;, &#39;有钱&#39;, &#39;有钱人&#39;, &#39;有鬼&#39;, &#39;朋友&#39;, &#39;朋友家&#39;,
+       &#39;服务员&#39;, &#39;本人&#39;, &#39;机器&#39;, &#39;机场&#39;, &#39;机智&#39;, &#39;果然&#39;, &#39;某人&#39;, &#39;校服&#39;, &#39;校长&#39;, &#39;样子&#39;, &#39;桌上&#39;,
+       &#39;桌子&#39;, &#39;梦想&#39;, &#39;梦见&#39;, &#39;横着&#39;, &#39;欣赏&#39;, &#39;正在&#39;, &#39;正太&#39;, &#39;正常&#39;, &#39;每天&#39;, &#39;每次&#39;, &#39;比如&#39;,
+       &#39;比较&#39;, &#39;水果&#39;, &#39;水里&#39;, &#39;永远&#39;, &#39;汉子&#39;, &#39;汤圆&#39;, &#39;汽车&#39;, &#39;沉默&#39;, &#39;没人&#39;, &#39;没想&#39;, &#39;没有&#39;,
+       &#39;没用&#39;, &#39;没累&#39;, &#39;没见&#39;, &#39;没说&#39;, &#39;没钱买&#39;, &#39;没钳&#39;, &#39;没错&#39;, &#39;河捕&#39;, &#39;河里&#39;, &#39;油井&#39;, &#39;油条&#39;,
+       &#39;沿着&#39;, &#39;法国人&#39;, &#39;泡妞&#39;, &#39;泡菜坛&#39;, &#39;泡起来&#39;, &#39;波有&#39;, &#39;泥巴&#39;, &#39;注定&#39;, &#39;注意&#39;, &#39;泪水&#39;,
+       &#39;洗发水&#39;, &#39;洗完&#39;, &#39;洗手间&#39;, &#39;洗澡&#39;, &#39;活得&#39;, &#39;流下来&#39;, &#39;流口水&#39;, &#39;流氓&#39;, &#39;流行语&#39;, &#39;流量&#39;,
+       &#39;流鼻涕&#39;, &#39;测试&#39;, &#39;浑身&#39;, &#39;浑身解数&#39;, &#39;浩劫&#39;, &#39;浪费&#39;, &#39;浮云&#39;, &#39;浴室&#39;, &#39;浴鬼&#39;, &#39;海尔&#39;,
+       &#39;消停&#39;, &#39;消失&#39;, &#39;淫笑&#39;, &#39;深呼吸&#39;, &#39;深夜&#39;, &#39;深沉&#39;, &#39;深深&#39;, &#39;混混&#39;, &#39;混贴&#39;, &#39;淹死&#39;, &#39;添条&#39;,
+       &#39;清朝&#39;, &#39;清脆&#39;, &#39;渐暗&#39;, &#39;渔网&#39;, &#39;温暖&#39;, &#39;温柔&#39;, &#39;温水&#39;, &#39;游到&#39;, &#39;游回来&#39;, &#39;游客&#39;, &#39;游戏&#39;,
+       &#39;游泳&#39;, &#39;游玩&#39;, &#39;游走&#39;, &#39;溜圈&#39;, &#39;滋味&#39;, &#39;滚出去&#39;, &#39;滚出来&#39;, &#39;滚滚&#39;, &#39;滚远&#39;, &#39;满嘴&#39;, &#39;满满&#39;,
+       &#39;漂亮&#39;, &#39;漆黑&#39;, &#39;激动&#39;, &#39;濒危&#39;, &#39;灌水&#39;, &#39;火化&#39;, &#39;火灾现场&#39;, &#39;火爆&#39;, &#39;火警&#39;, &#39;灭亡&#39;, &#39;灯泡&#39;,
+       &#39;烟花&#39;, &#39;然后&#39;, &#39;煤气罐&#39;, &#39;照抄&#39;, &#39;熊猫&#39;, &#39;爬山&#39;, &#39;爱情&#39;, &#39;爱迪生&#39;, &#39;父亲&#39;, &#39;爷爷&#39;, &#39;爸爸&#39;,
+       &#39;牙齿&#39;, &#39;牙龈&#39;, &#39;牛腩&#39;, &#39;牧师&#39;, &#39;物品&#39;, &#39;物理&#39;, &#39;物理课&#39;, &#39;物种&#39;, &#39;特二逼&#39;, &#39;特别&#39;, &#39;特强&#39;,
+       &#39;特性&#39;, &#39;特恨&#39;, &#39;特意&#39;, &#39;特技&#39;, &#39;特淡定&#39;, &#39;特牛&#39;, &#39;犀利&#39;, &#39;犒劳&#39;, &#39;犯法&#39;, &#39;犹豫&#39;, &#39;狂叫&#39;,
+       &#39;狂奔&#39;, &#39;狄仁杰&#39;, &#39;狠狠&#39;, &#39;狼狈&#39;, &#39;猛吸&#39;, &#39;猝然&#39;, &#39;猪大肠&#39;, &#39;猪肉&#39;, &#39;献给&#39;, &#39;猴哥&#39;, &#39;王八&#39;,
+       &#39;王大哥&#39;, &#39;王部&#39;, &#39;玛淡&#39;, &#39;玩多&#39;, &#39;玩游戏&#39;, &#39;玩电脑&#39;, &#39;环顾四周&#39;, &#39;现在&#39;, &#39;现实&#39;, &#39;玻璃&#39;,
+       &#39;珍惜&#39;, &#39;班有&#39;, &#39;班级&#39;, &#39;班里&#39;, &#39;理解&#39;, &#39;瓶子&#39;, &#39;生与死&#39;, &#39;生气&#39;, &#39;生活&#39;, &#39;生病&#39;, &#39;用来&#39;,
+       &#39;电脑&#39;, &#39;电视&#39;, &#39;电话&#39;, &#39;男人&#39;, &#39;男友&#39;, &#39;男子&#39;, &#39;男孩&#39;, &#39;男方&#39;, &#39;男朋友&#39;, &#39;画蛇添足&#39;,
+       &#39;留下&#39;, &#39;痛苦&#39;, &#39;痴汉&#39;, &#39;白日&#39;, &#39;的话&#39;, &#39;直接&#39;, &#39;相亲&#39;, &#39;相会&#39;, &#39;相册&#39;, &#39;省钱&#39;, &#39;看不到&#39;,
+       &#39;看书&#39;, &#39;看到&#39;, &#39;看看&#39;, &#39;看着&#39;, &#39;看见&#39;, &#39;看起来&#39;, &#39;看过&#39;, &#39;真的&#39;, &#39;眼睛&#39;, &#39;眼神&#39;, &#39;眼里&#39;,
+       &#39;着急&#39;, &#39;睡觉&#39;, &#39;知道&#39;, &#39;短信&#39;, &#39;研究&#39;, &#39;硬币&#39;, &#39;确定&#39;, &#39;碗筷&#39;, &#39;碰到&#39;, &#39;神马&#39;, &#39;科学家&#39;,
+       &#39;突出&#39;, &#39;突然&#39;, &#39;窗外&#39;, &#39;等于&#39;, &#39;粽子&#39;, &#39;精神损失费&#39;, &#39;紧紧&#39;, &#39;红包&#39;, &#39;约会&#39;, &#39;纸条&#39;,
+       &#39;组个&#39;, &#39;终于&#39;, &#39;经常&#39;, &#39;经过&#39;, &#39;结婚&#39;, &#39;结果&#39;, &#39;结账&#39;, &#39;绝对&#39;, &#39;继续&#39;, &#39;罐子&#39;, &#39;美国&#39;,
+       &#39;美女&#39;, &#39;羡慕&#39;, &#39;老公&#39;, &#39;老大爷&#39;, &#39;老婆&#39;, &#39;老子&#39;, &#39;老师&#39;, &#39;老板&#39;, &#39;老爸&#39;, &#39;老虎&#39;, &#39;老衲&#39;,
+       &#39;考试&#39;, &#39;而且&#39;, &#39;而是&#39;, &#39;聊天&#39;, &#39;联系方式&#39;, &#39;肚子&#39;, &#39;股票&#39;, &#39;背景&#39;, &#39;脑子&#39;, &#39;脑子里&#39;,
+       &#39;脑袋&#39;, &#39;脸上&#39;, &#39;脸小红&#39;, &#39;脸红&#39;, &#39;脸色&#39;, &#39;脾气&#39;, &#39;自动&#39;, &#39;自己&#39;, &#39;自拍&#39;, &#39;自毙&#39;, &#39;自然课&#39;,
+       &#39;自由&#39;, &#39;自觉&#39;, &#39;臭汗&#39;, &#39;臭豆腐&#39;, &#39;至于&#39;, &#39;至今&#39;, &#39;至少&#39;, &#39;舌头&#39;, &#39;舍不得&#39;, &#39;花花&#39;,
+       &#39;若无其事&#39;, &#39;英雄&#39;, &#39;萝卜&#39;, &#39;萧萧&#39;, &#39;落木&#39;, &#39;著名&#39;, &#39;葵花&#39;, &#39;蓝牙&#39;, &#39;虚伪&#39;, &#39;虽然&#39;, &#39;血水&#39;,
+       &#39;行为&#39;, &#39;行驶&#39;, &#39;衣服&#39;, &#39;被子&#39;, &#39;被窝&#39;, &#39;装作&#39;, &#39;装备&#39;, &#39;裙子&#39;, &#39;裤子&#39;, &#39;要是&#39;, &#39;觉得&#39;,
+       &#39;角落里&#39;, &#39;警察&#39;, &#39;认识&#39;, &#39;记得&#39;, &#39;许仙&#39;, &#39;诗词&#39;, &#39;询问&#39;, &#39;诧异&#39;, &#39;语文课&#39;, &#39;说完&#39;, &#39;说话&#39;,
+       &#39;说道&#39;, &#39;读书&#39;, &#39;课堂&#39;, &#39;谈恋爱&#39;, &#39;谢谢&#39;, &#39;贝多芬&#39;, &#39;贩卖&#39;, &#39;购物车&#39;, &#39;赚钱&#39;, &#39;赫然&#39;,
+       &#39;赶紧&#39;, &#39;起床&#39;, &#39;起来&#39;, &#39;超市&#39;, &#39;越来越&#39;, &#39;趴在&#39;, &#39;距离&#39;, &#39;跟着&#39;, &#39;路上&#39;, &#39;路边&#39;, &#39;身上&#39;,
+       &#39;身后&#39;, &#39;身材&#39;, &#39;身边&#39;, &#39;车上&#39;, &#39;车里&#39;, &#39;转换成&#39;, &#39;轮椅&#39;, &#39;轰轰烈烈&#39;, &#39;辆车&#39;, &#39;输光&#39;,
+       &#39;辛苦&#39;, &#39;过去&#39;, &#39;过夜&#39;, &#39;过来&#39;, &#39;过硬&#39;, &#39;过话&#39;, &#39;迎面&#39;, &#39;还是&#39;, &#39;还有&#39;, &#39;还来&#39;, &#39;还生&#39;,
+       &#39;这个&#39;, &#39;这么&#39;, &#39;这位&#39;, &#39;这句&#39;, &#39;这女&#39;, &#39;这年头&#39;, &#39;这时&#39;, &#39;这是&#39;, &#39;这条&#39;, &#39;这样&#39;, &#39;这熊&#39;,
+       &#39;这病&#39;, &#39;这种&#39;, &#39;这要&#39;, &#39;这话&#39;, &#39;这货&#39;, &#39;这趟&#39;, &#39;这辈子&#39;, &#39;这边&#39;, &#39;这里&#39;, &#39;进个&#39;, &#39;进入&#39;,
+       &#39;进化&#39;, &#39;进去&#39;, &#39;进得&#39;, &#39;进新&#39;, &#39;进来&#39;, &#39;进水&#39;, &#39;进行&#39;, &#39;进门&#39;, &#39;退货&#39;, &#39;送给&#39;, &#39;选择&#39;,
+       &#39;选择性&#39;, &#39;递给&#39;, &#39;造句&#39;, &#39;遇到&#39;, &#39;那个&#39;, &#39;那么&#39;, &#39;那些&#39;, &#39;那人&#39;, &#39;那年&#39;, &#39;那样&#39;, &#39;那种&#39;,
+       &#39;那里&#39;, &#39;邻居&#39;, &#39;部长&#39;, &#39;醒来&#39;, &#39;重点&#39;, &#39;金钱&#39;, &#39;钞票&#39;, &#39;钱包&#39;, &#39;银行&#39;, &#39;长得&#39;, &#39;长痘痘&#39;,
+       &#39;长相&#39;, &#39;长逝&#39;, &#39;门口&#39;, &#39;门外&#39;, &#39;闭上眼睛&#39;, &#39;闭嘴&#39;, &#39;闭气&#39;, &#39;问题&#39;, &#39;闺蜜&#39;, &#39;阿姨&#39;, &#39;除了&#39;,
+       &#39;除皱&#39;, &#39;陪葬&#39;, &#39;随从&#39;, &#39;随便&#39;, &#39;隔壁&#39;, &#39;难怪&#39;, &#39;需要&#39;, &#39;青春&#39;, &#39;非要&#39;, &#39;面前&#39;, &#39;韩信&#39;,
+       &#39;韩国&#39;, &#39;韭菜&#39;, &#39;顿时&#39;, &#39;领导&#39;, &#39;饭店&#39;, &#39;饮料&#39;, &#39;马上&#39;, &#39;马云&#39;, &#39;马儿&#39;, &#39;马儿跑&#39;, &#39;马克思&#39;,
+       &#39;马克思主义&#39;, &#39;马化腾&#39;, &#39;马扎&#39;, &#39;马桶&#39;, &#39;马路边&#39;, &#39;驾崩&#39;, &#39;驾照&#39;, &#39;驾驶&#39;, &#39;骂名&#39;, &#39;骨头&#39;,
+       &#39;骨感&#39;, &#39;高中&#39;, &#39;高傲&#39;, &#39;高潮&#39;, &#39;高等教育&#39;, &#39;黄瓜&#39;, &#39;龙珠&#39;], dtype=object)</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">topic</span><span class="o">.</span><span class="n">argsort</span><span class="p">()[:</span><span class="o">-</span><span class="n">n_top_words</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">tmp</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>98 东西
+246 吃饭
+343 妹子
+72 不会
+933 那么
+747 睡觉
+283 回家
+472 损友
+149 但是
+88 不能
+96 世界
+742 真的
+28 一定
+865 起来
+249 同事
+352 媳妇
+340 妈妈
+140 他们
+313 大家
+499 早上
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E8%BF%9B%E4%B8%80%E6%AD%A5%E5%AD%A6%E4%B9%A0">&#36827;&#19968;&#27493;&#23398;&#20064;<a class="anchor-link" href="#%E8%BF%9B%E4%B8%80%E6%AD%A5%E5%AD%A6%E4%B9%A0">&#182;</a></h2>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>爬虫：推荐 Scrapy，是目前最常用的用于开发爬虫的工具之一。</p>
+<p>自然语言处理：循环神经网络 RNN。</p>
+
+</div>
+</div>
+</body>
+
+
+
+
+
+
+
+</html>

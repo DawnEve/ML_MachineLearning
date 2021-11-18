@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>sklearn_NLP</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="/static/css/md_notebook.css" />
+
+<!-- Load mathjax -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML-full,Safe"> </script>
+    <!-- MathJax configuration -->
+    <script type="text/x-mathjax-config">
+    init_mathjax = function() {
+        if (window.MathJax) {
+        // MathJax loaded
+            MathJax.Hub.Config({
+                TeX: {
+                    equationNumbers: {
+                    autoNumber: "AMS",
+                    useLabelIds: true
+                    }
+                },
+                tex2jax: {
+                    inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                    displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+                    processEscapes: true,
+                    processEnvironments: true
+                },
+                displayAlign: 'center',
+                CommonHTML: {
+                    linebreaks: { 
+                    automatic: true 
+                    }
+                }
+            });
+        
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
+    }
+    init_mathjax();
+    </script>
+    <!-- End of mathjax configuration --></head>
+<body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
+
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>chapter 13 文本数据处理</p>
+
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="%E8%AF%8D%E8%A2%8B%E6%A8%A1%E5%9E%8B">&#35789;&#34955;&#27169;&#22411;<a class="anchor-link" href="#%E8%AF%8D%E8%A2%8B%E6%A8%A1%E5%9E%8B">&#182;</a></h1>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E8%8B%B1%E8%AF%AD%E5%8F%A5%E5%AD%90%E5%88%86%E8%AF%8D">&#33521;&#35821;&#21477;&#23376;&#20998;&#35789;<a class="anchor-link" href="#%E8%8B%B1%E8%AF%AD%E5%8F%A5%E5%AD%90%E5%88%86%E8%AF%8D">&#182;</a></h2>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[1]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 导入向量化工具</span>
+<span class="kn">from</span> <span class="nn">sklearn.feature_extraction.text</span> <span class="kn">import</span> <span class="n">CountVectorizer</span>
+<span class="n">vect</span> <span class="o">=</span> <span class="n">CountVectorizer</span><span class="p">()</span>
+<span class="c1"># 拟合文本数据</span>
+<span class="n">en</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;The quick brown fox jumps over a lazy dog&quot;</span><span class="p">]</span>
+<span class="n">vect</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">en</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;words:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span> <span class="nb">len</span><span class="p">(</span><span class="n">vect</span><span class="o">.</span><span class="n">vocabulary_</span><span class="p">)</span> <span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;words:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vect</span><span class="o">.</span><span class="n">vocabulary_</span><span class="p">))</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>words:8
+words:{&#39;the&#39;: 7, &#39;quick&#39;: 6, &#39;brown&#39;: 0, &#39;fox&#39;: 2, &#39;jumps&#39;: 3, &#39;over&#39;: 5, &#39;lazy&#39;: 4, &#39;dog&#39;: 1}
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E4%B8%AD%E6%96%87%E5%8F%A5%E5%AD%90%E5%88%86%E8%AF%8D">&#20013;&#25991;&#21477;&#23376;&#20998;&#35789;<a class="anchor-link" href="#%E4%B8%AD%E6%96%87%E5%8F%A5%E5%AD%90%E5%88%86%E8%AF%8D">&#182;</a></h2>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[2]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 而中文不能自动分词</span>
+<span class="n">cn</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;那只敏捷的棕色狐狸跳过了一只懒惰的狗&quot;</span><span class="p">]</span>
+<span class="n">vect</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">cn</span><span class="p">)</span>
+
+<span class="n">vect</span><span class="o">.</span><span class="n">vocabulary_</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[2]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>{&#39;那只敏捷的棕色狐狸跳过了一只懒惰的狗&#39;: 0}</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[20]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 中文使用 结巴分词 pip3 install jieba -i https://pypi.douban.com/simple/</span>
+<span class="c1"># jieba-0.42.1</span>
+<span class="kn">import</span> <span class="nn">jieba</span>
+<span class="n">cn1</span><span class="o">=</span><span class="n">jieba</span><span class="o">.</span><span class="n">lcut</span><span class="p">(</span><span class="n">cn</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;cn1:&quot;</span><span class="p">,</span> <span class="n">cn1</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>cn1: [&#39;那&#39;, &#39;只&#39;, &#39;敏捷&#39;, &#39;的&#39;, &#39;棕色&#39;, &#39;狐狸&#39;, &#39;跳过&#39;, &#39;了&#39;, &#39;一只&#39;, &#39;懒惰&#39;, &#39;的&#39;, &#39;狗&#39;]
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[21]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 使用空格连起来</span>
+<span class="n">cn2</span><span class="o">=</span> <span class="p">[</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cn1</span><span class="p">)]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;cn2:&quot;</span><span class="p">,</span> <span class="n">cn2</span><span class="p">)</span>
+
+<span class="n">vect</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">cn2</span><span class="p">)</span>
+<span class="n">vect</span><span class="o">.</span><span class="n">vocabulary_</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>cn2: [&#39;那 只 敏捷 的 棕色 狐狸 跳过 了 一只 懒惰 的 狗&#39;]
+</pre>
+</div>
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[21]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>{&#39;敏捷&#39;: 2, &#39;棕色&#39;: 3, &#39;狐狸&#39;: 4, &#39;跳过&#39;: 5, &#39;一只&#39;: 0, &#39;懒惰&#39;: 1}</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E5%8F%A5%E5%AD%90%E5%90%91%E9%87%8F%E5%8C%96%EF%BC%8C%E8%AF%8D%E8%A2%8B%E6%A8%A1%E5%9E%8B-bag-of-words">&#21477;&#23376;&#21521;&#37327;&#21270;&#65292;&#35789;&#34955;&#27169;&#22411; bag of words<a class="anchor-link" href="#%E5%8F%A5%E5%AD%90%E5%90%91%E9%87%8F%E5%8C%96%EF%BC%8C%E8%AF%8D%E8%A2%8B%E6%A8%A1%E5%9E%8B-bag-of-words">&#182;</a></h2>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[22]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 定义词袋模型</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">cn2</span><span class="p">)</span>
+<span class="n">bag_of_words</span> <span class="o">=</span> <span class="n">vect</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span> <span class="n">cn2</span> <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;2-&gt;&quot;</span><span class="p">,</span> <span class="n">bag_of_words</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;3-&gt;&quot;</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">bag_of_words</span><span class="p">)</span> <span class="p">)</span>
+
+<span class="c1"># 打印词袋模型的密度表达</span>
+<span class="nb">print</span><span class="p">(</span> <span class="n">bag_of_words</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span> <span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>[&#39;那 只 敏捷 的 棕色 狐狸 跳过 了 一只 懒惰 的 狗&#39;]
+2-&gt;   (0, 0)	1
+  (0, 1)	1
+  (0, 2)	1
+  (0, 3)	1
+  (0, 4)	1
+  (0, 5)	1
+3-&gt; &lt;1x6 sparse matrix of type &#39;&lt;class &#39;numpy.int64&#39;&gt;&#39;
+	with 6 stored elements in Compressed Sparse Row format&gt;
+[[1 1 1 1 1 1]]
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[24]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">## 话一句复杂的句子</span>
+<span class="n">cn_1</span><span class="o">=</span><span class="n">jieba</span><span class="o">.</span><span class="n">lcut</span><span class="p">(</span><span class="s2">&quot;懒惰的狐狸不如敏捷的狐狸敏捷，敏捷的狐狸不如懒惰的狐狸懒惰&quot;</span><span class="p">)</span>
+<span class="n">cn_2</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cn_1</span><span class="p">)]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">cn_2</span><span class="p">)</span>
+
+<span class="c1"># 建立新的词袋模型</span>
+<span class="n">new_bag</span> <span class="o">=</span> <span class="n">vect</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">cn_2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;词袋特征:&quot;</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">new_bag</span><span class="p">)</span> <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;词袋密度:&quot;</span><span class="p">,</span> <span class="n">new_bag</span><span class="o">.</span><span class="n">toarray</span><span class="p">())</span>
+<span class="c1"># 0位 一只 出现0次；1位 懒惰 出现3次；... 4位 狐狸 出现4次；...</span>
+
+<span class="c1"># 词袋模型，仅仅是用数组表示每个单词出现的频率，并不表示每个单词的位置。</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>[&#39;懒惰 的 狐狸 不如 敏捷 的 狐狸 敏捷 ， 敏捷 的 狐狸 不如 懒惰 的 狐狸 懒惰&#39;]
+词袋特征: &lt;1x6 sparse matrix of type &#39;&lt;class &#39;numpy.int64&#39;&gt;&#39;
+	with 3 stored elements in Compressed Sparse Row format&gt;
+词袋密度: [[0 3 3 0 4 0]]
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="%E5%AF%B9%E6%96%87%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%9A%84%E4%BC%98%E5%8C%96%E5%A4%84%E7%90%86">&#23545;&#25991;&#26412;&#25968;&#25454;&#30340;&#20248;&#21270;&#22788;&#29702;<a class="anchor-link" href="#%E5%AF%B9%E6%96%87%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%9A%84%E4%BC%98%E5%8C%96%E5%A4%84%E7%90%86">&#182;</a></h1>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E4%BD%BF%E7%94%A8-n-Gram-%E6%94%B9%E5%96%84%E8%AF%8D%E8%A2%8B%E6%A8%A1%E5%9E%8B">&#20351;&#29992; n-Gram &#25913;&#21892;&#35789;&#34955;&#27169;&#22411;<a class="anchor-link" href="#%E4%BD%BF%E7%94%A8-n-Gram-%E6%94%B9%E5%96%84%E8%AF%8D%E8%A2%8B%E6%A8%A1%E5%9E%8B">&#182;</a></h2>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>除了词语的频率，词语的顺序也很重要。</p>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[1]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 随便写一句话</span>
+<span class="kn">import</span> <span class="nn">jieba</span>
+<span class="n">joke</span> <span class="o">=</span> <span class="n">jieba</span><span class="o">.</span><span class="n">lcut</span><span class="p">(</span><span class="s2">&quot;道士看到和尚亲吻了尼姑的嘴唇&quot;</span><span class="p">)</span>
+<span class="c1"># 插入空格</span>
+<span class="n">joke</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">joke</span><span class="p">)]</span>
+
+<span class="c1"># 转为向量</span>
+<span class="c1"># 导入向量化工具</span>
+<span class="kn">from</span> <span class="nn">sklearn.feature_extraction.text</span> <span class="kn">import</span> <span class="n">CountVectorizer</span>
+<span class="n">vect</span> <span class="o">=</span> <span class="n">CountVectorizer</span><span class="p">()</span>
+<span class="n">vect</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">joke</span><span class="p">)</span>
+<span class="n">joke_feature</span> <span class="o">=</span> <span class="n">vect</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">joke</span><span class="p">)</span>
+<span class="c1"># 打印</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;单词表:&quot;</span><span class="p">,</span> <span class="n">vect</span><span class="o">.</span><span class="n">vocabulary_</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;特征表达:&quot;</span><span class="p">,</span> <span class="n">joke_feature</span><span class="o">.</span><span class="n">toarray</span><span class="p">())</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
+<pre>Building prefix dict from the default dictionary ...
+Loading model from cache /tmp/jieba.cache
+Loading model cost 0.460 seconds.
+Prefix dict has been built successfully.
+</pre>
+</div>
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>单词表: {&#39;道士&#39;: 5, &#39;看到&#39;: 4, &#39;和尚&#39;: 1, &#39;亲吻&#39;: 0, &#39;尼姑&#39;: 3, &#39;嘴唇&#39;: 2}
+特征表达: [[1 1 1 1 1 1]]
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[2]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 调整顺序</span>
+<span class="n">joke2</span> <span class="o">=</span> <span class="n">jieba</span><span class="o">.</span><span class="n">lcut</span><span class="p">(</span><span class="s2">&quot;尼姑看到道士亲吻了和尚的嘴唇&quot;</span><span class="p">)</span>
+<span class="c1"># 插入空格</span>
+<span class="n">joke2</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">joke2</span><span class="p">)]</span>
+<span class="c1"># 特征提取</span>
+<span class="n">joke_feature2</span> <span class="o">=</span> <span class="n">vect</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">joke2</span><span class="p">)</span>
+
+<span class="c1"># 打印</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;单词表:&quot;</span><span class="p">,</span> <span class="n">vect</span><span class="o">.</span><span class="n">vocabulary_</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;特征表达:&quot;</span><span class="p">,</span> <span class="n">joke_feature2</span><span class="o">.</span><span class="n">toarray</span><span class="p">())</span>
+
+<span class="c1"># 这2句对于人类是明显不同的，但对于这个机器模型是一模一样的。这肯定有问题。</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>单词表: {&#39;道士&#39;: 5, &#39;看到&#39;: 4, &#39;和尚&#39;: 1, &#39;亲吻&#39;: 0, &#39;尼姑&#39;: 3, &#39;嘴唇&#39;: 2}
+特征表达: [[1 1 1 1 1 1]]
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 可以使用 CountVectorizer 的 ngram_range 参数进行参数调节。</span>
+<span class="c1"># n 是整型，</span>
+<span class="c1">#  n=2的模型叫做 bi-Gram，表示 n-Gram 会对相邻的2个单词进行配对；</span>
+<span class="c1">#  n=3的模型叫做 tri-Gram，表示 n-Gram 会对相邻的3个单词进行配对。</span>
+
+<span class="n">vect</span><span class="o">=</span><span class="n">CountVectorizer</span><span class="p">(</span><span class="n">ngram_range</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="c1"># 重新进行文本数据的特征提取</span>
+<span class="n">cv</span><span class="o">=</span><span class="n">vect</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">joke</span><span class="p">)</span>
+<span class="n">joke_feature</span><span class="o">=</span><span class="n">cv</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">joke</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;单词表:&quot;</span><span class="p">,</span> <span class="n">cv</span><span class="o">.</span><span class="n">vocabulary_</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;特征表达:&quot;</span><span class="p">,</span> <span class="n">joke_feature</span><span class="o">.</span><span class="n">toarray</span><span class="p">())</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>单词表: {&#39;道士 看到&#39;: 4, &#39;看到 和尚&#39;: 3, &#39;和尚 亲吻&#39;: 1, &#39;亲吻 尼姑&#39;: 0, &#39;尼姑 嘴唇&#39;: 2}
+特征表达: [[1 1 1 1 1]]
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 调整顺序后</span>
+
+<span class="c1"># 特征提取</span>
+<span class="n">joke_feature2</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">joke2</span><span class="p">)</span>
+
+<span class="c1"># 打印</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;单词表:&quot;</span><span class="p">,</span> <span class="n">cv</span><span class="o">.</span><span class="n">vocabulary_</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;特征表达:&quot;</span><span class="p">,</span> <span class="n">joke_feature2</span><span class="o">.</span><span class="n">toarray</span><span class="p">())</span>
+<span class="c1"># 机器已经不认为这是同一句话了。</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>单词表: {&#39;道士 看到&#39;: 4, &#39;看到 和尚&#39;: 3, &#39;和尚 亲吻&#39;: 1, &#39;亲吻 尼姑&#39;: 0, &#39;尼姑 嘴唇&#39;: 2}
+特征表达: [[0 0 0 0 0]]
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E4%BD%BF%E7%94%A8-tf-idf-%E7%AE%97%E6%B3%95%E5%A4%84%E7%90%86%E6%96%87%E6%9C%AC%E6%95%B0%E6%8D%AE">&#20351;&#29992; tf-idf &#31639;&#27861;&#22788;&#29702;&#25991;&#26412;&#25968;&#25454;<a class="anchor-link" href="#%E4%BD%BF%E7%94%A8-tf-idf-%E7%AE%97%E6%B3%95%E5%A4%84%E7%90%86%E6%96%87%E6%9C%AC%E6%95%B0%E6%8D%AE">&#182;</a></h2>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>tf-idf: term frequency-inverse document frequency,翻译 “词频-逆向文件频率”。</p>
+<ul>
+<li>用来评估某个词对于一个语料库中某一份文件的重要程度。</li>
+<li>如果一个词在A文件中频率很高，在其他文件中频率很低，那么 tf-idf 就认为这个词能区分文件，很重要。反之则认为该单词重要程度较低。</li>
+</ul>
+<p>公式：tf-idf 的计算公式有很多实现，这是其中一种。</p>
+<ul>
+<li>单词频率 tf= Nij / 求和(k, Nkj); 其中Nij表示某个词在语料库中某文件中出现的次数；分母表示该文件中所有单词出现的次数之和。</li>
+<li>idf 的计算公式 idf = log( (N+1)/(Nw+1) ) + 1; 其中 N表示语料库中文件的总数；Nw表示语料库中包含上述单词的文件数量。</li>
+<li>最终计算 tf-idf 值的公式: tf-idf = tf * idf</li>
+</ul>
+
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h3 id="%E5%B8%B8%E8%A7%84-SVM-%E5%88%86%E7%B1%BB%E8%AF%84%E4%BB%B7%E6%96%87%E6%9C%AC">&#24120;&#35268; SVM &#20998;&#31867;&#35780;&#20215;&#25991;&#26412;<a class="anchor-link" href="#%E5%B8%B8%E8%A7%84-SVM-%E5%88%86%E7%B1%BB%E8%AF%84%E4%BB%B7%E6%96%87%E6%9C%AC">&#182;</a></h3>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 这里使用一套英文 评价数据，一个是文本评论，一个是情感分类 positive or negative</span>
+<span class="c1"># http://ai.stanford.edu/~amaas/data/sentiment/</span>
+<span class="k">def</span> <span class="nf">readFiles2Array</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="n">arr</span><span class="o">=</span><span class="p">[];</span>
+    <span class="n">fr</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">lineR</span> <span class="ow">in</span> <span class="n">fr</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+        <span class="n">line</span><span class="o">=</span><span class="n">lineR</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">arr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="n">fr</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">arr</span><span class="p">;</span>
+
+<span class="n">reviews</span><span class="o">=</span><span class="n">readFiles2Array</span><span class="p">(</span><span class="s2">&quot;data/reviews.txt&quot;</span><span class="p">)</span>
+<span class="n">labels</span><span class="o">=</span><span class="n">readFiles2Array</span><span class="p">(</span><span class="s2">&quot;data/labels.txt&quot;</span><span class="p">)</span>
+
+<span class="c1"># 查看一条评论</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">reviews</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>bromwell high is a cartoon comedy . it ran at the same time as some other programs about school life  such as  teachers  . my   years in the teaching profession lead me to believe that bromwell high  s satire is much closer to reality than is  teachers  . the scramble to survive financially  the insightful students who can see right through their pathetic teachers  pomp  the pettiness of the whole situation  all remind me of the schools i knew and their students . when i saw the episode in which a student repeatedly tried to burn down the school  i immediately recalled . . . . . . . . . at . . . . . . . . . . high . a classic line inspector i  m here to sack one of your teachers . student welcome to bromwell high . i expect that many adults of my age think that bromwell high is far fetched . what a pity that it isn  t 
+ positive
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 拆分数据</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+
+<span class="c1"># 为了快速，只取前1000条</span>
+<span class="n">total_size</span><span class="o">=</span><span class="mi">2000</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">reviews</span><span class="p">)[:</span><span class="n">total_size</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">labels</span><span class="p">)[:</span><span class="n">total_size</span><span class="p">]</span> <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="c1">#(18750,) (6250,)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>(1500,) (500,)
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 拟合</span>
+<span class="n">vect</span> <span class="o">=</span> <span class="n">CountVectorizer</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+<span class="c1"># 文本转为向量</span>
+<span class="n">X_train_vect</span> <span class="o">=</span> <span class="n">vect</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+<span class="c1"># </span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;训练集样本特征数量:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vect</span><span class="o">.</span><span class="n">get_feature_names_out</span><span class="p">())</span> <span class="p">)</span> <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;最后10个训练集样本特征:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span> <span class="n">vect</span><span class="o">.</span><span class="n">get_feature_names_out</span><span class="p">()[</span><span class="o">-</span><span class="mi">10</span><span class="p">:]</span> <span class="p">))</span>
+
+<span class="n">X_train_vect</span><span class="o">.</span><span class="n">shape</span> <span class="c1">#(750, 14330) 有1.4万特征</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>训练集样本特征数量:19861
+最后10个训练集样本特征:[&#39;zorro&#39; &#39;zsigmond&#39; &#39;zu&#39; &#39;zubeidaa&#39; &#39;zucco&#39; &#39;zuckerman&#39; &#39;zuzz&#39; &#39;zwick&#39;
+ &#39;zz&#39; &#39;zzzz&#39;]
+</pre>
+</div>
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>(1500, 19861)</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 有监督的学习算法，进行交叉验证评分</span>
+
+<span class="c1"># 导入线性SVC分类模型</span>
+<span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <span class="n">LinearSVC</span>
+<span class="c1"># 导入交叉验证工具</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">cross_val_score</span>
+<span class="c1"># 使用交叉验证对模型进行打分</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">LinearSVC</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">3000</span><span class="p">),</span> <span class="n">X_train_vect</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mean score:</span><span class="si">{:0.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
+<span class="c1"># 1k data: 0.836</span>
+<span class="c1"># 2k data: 0.858</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>mean score:0.849
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 泛化到测试集的表现</span>
+<span class="n">X_test_vect</span> <span class="o">=</span> <span class="n">vect</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+<span class="c1"># 使用 SVC 拟合训练数据集</span>
+<span class="n">clf</span><span class="o">=</span><span class="n">LinearSVC</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">3000</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train_vect</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;train score:</span><span class="si">{:0.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_train_vect</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;test score:</span><span class="si">{:0.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test_vect</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)))</span>
+<span class="c1"># test score:</span>
+<span class="c1"># 1k data: 0.844</span>
+<span class="c1"># 2k data: 0.860</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>train score:1.000
+test score:0.864
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h3 id="tf-idf-%E5%88%86%E7%B1%BB">tf-idf &#20998;&#31867;<a class="anchor-link" href="#tf-idf-%E5%88%86%E7%B1%BB">&#182;</a></h3>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.feature_extraction.text</span> <span class="kn">import</span> <span class="n">TfidfTransformer</span>
+<span class="c1"># 使用tf-idf工具转化训练集和测试集</span>
+<span class="n">tfidf</span> <span class="o">=</span> <span class="n">TfidfTransformer</span><span class="p">(</span><span class="n">smooth_idf</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">tfidf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train_vect</span><span class="p">)</span>
+<span class="n">X_train_tfidf</span> <span class="o">=</span> <span class="n">tfidf</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_train_vect</span><span class="p">)</span>
+<span class="n">X_test_tfidf</span> <span class="o">=</span> <span class="n">tfidf</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_test_vect</span><span class="p">)</span>
+<span class="c1"># 将处理前后的特征打印进行比较</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;tf-idf前的特征:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">X_train_vect</span><span class="p">[:</span><span class="mi">6</span><span class="p">,</span> <span class="mi">20</span><span class="p">:</span><span class="mi">30</span><span class="p">]</span><span class="o">.</span><span class="n">toarray</span><span class="p">())</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;tf-idf处理后的特征:&quot;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="n">display</span><span class="p">(</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X_train_tfidf</span><span class="p">[:</span><span class="mi">6</span><span class="p">,</span> <span class="mi">20</span><span class="p">:</span><span class="mi">30</span><span class="p">]</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span> <span class="p">)</span> <span class="p">)</span>
+
+<span class="c1"># 可见处理前是单词频数，处理后是词频乘以逆向文档频率，是一个浮点数。</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>tf-idf前的特征:
+ [[0 0 0 0 0 0 0 0 0 0]
+ [0 0 0 0 0 0 0 0 0 0]
+ [0 0 0 0 0 0 0 0 0 0]
+ [0 0 0 0 0 0 0 0 0 0]
+ [0 0 0 0 0 0 0 0 0 0]
+ [0 0 0 0 0 0 0 0 0 0]]
+tf-idf处理后的特征:
+</pre>
+</div>
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output " data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>7</th>
+      <th>8</th>
+      <th>9</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[11]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 使用 tf-idf 后的新数据</span>
+
+<span class="c1"># 使用交叉验证对模型进行打分</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">LinearSVC</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">3000</span><span class="p">),</span> <span class="n">X_train_tfidf</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mean score of CV:</span><span class="si">{:0.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
+
+<span class="c1"># 训练线性 SVC 模型</span>
+<span class="n">clf</span><span class="o">=</span><span class="n">LinearSVC</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">3000</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train_tfidf</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;train score:</span><span class="si">{:0.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_train_tfidf</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;test score:</span><span class="si">{:0.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test_tfidf</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)))</span>
+<span class="c1"># 测试集有所提升</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>mean score of CV:0.902
+train score:1.000
+test score:0.928
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E5%88%A0%E9%99%A4%E6%96%87%E6%9C%AC%E6%95%B0%E6%8D%AE%E4%B8%AD%E7%9A%84%E5%81%9C%E7%94%A8%E8%AF%8D-stopwords">&#21024;&#38500;&#25991;&#26412;&#25968;&#25454;&#20013;&#30340;&#20572;&#29992;&#35789; stopwords<a class="anchor-link" href="#%E5%88%A0%E9%99%A4%E6%96%87%E6%9C%AC%E6%95%B0%E6%8D%AE%E4%B8%AD%E7%9A%84%E5%81%9C%E7%94%A8%E8%AF%8D-stopwords">&#182;</a></h2>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>停用词 stopwords，指的是出现频率很高，但没有实际意义的单词，通常包括各种语气词、连词、介词等。</p>
+<ul>
+<li>筛选策略，就是去掉频率过高的词；或者使查表过滤。sklearn 也内置了一个list。</li>
+<li>中文常见的表有: 哈工大停用词表,百度停用词表</li>
+</ul>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[12]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 导入停用词表</span>
+<span class="kn">from</span> <span class="nn">sklearn.feature_extraction.text</span> <span class="kn">import</span> <span class="n">ENGLISH_STOP_WORDS</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sklearn内置停用词个数:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ENGLISH_STOP_WORDS</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;前20个和后20个:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="nb">list</span><span class="p">(</span><span class="n">ENGLISH_STOP_WORDS</span><span class="p">)[:</span><span class="mi">20</span><span class="p">],</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">ENGLISH_STOP_WORDS</span><span class="p">)[</span><span class="o">-</span><span class="mi">20</span><span class="p">:])</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>sklearn内置停用词个数: 318
+前20个和后20个:
+ [&#39;until&#39;, &#39;into&#39;, &#39;whereby&#39;, &#39;anywhere&#39;, &#39;some&#39;, &#39;around&#39;, &#39;us&#39;, &#39;five&#39;, &#39;these&#39;, &#39;ten&#39;, &#39;anyhow&#39;, &#39;interest&#39;, &#39;by&#39;, &#39;couldnt&#39;, &#39;throughout&#39;, &#39;nothing&#39;, &#39;put&#39;, &#39;hundred&#39;, &#39;thence&#39;, &#39;per&#39;] 
+ [&#39;had&#39;, &#39;may&#39;, &#39;somewhere&#39;, &#39;co&#39;, &#39;therefore&#39;, &#39;with&#39;, &#39;were&#39;, &#39;him&#39;, &#39;many&#39;, &#39;fifteen&#39;, &#39;own&#39;, &#39;me&#39;, &#39;mine&#39;, &#39;being&#39;, &#39;between&#39;, &#39;wherever&#39;, &#39;three&#39;, &#39;done&#39;, &#39;move&#39;, &#39;fifty&#39;]
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[13]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 删除停用词后，看模型打分是否有提升</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.feature_extraction.text</span> <span class="kn">import</span> <span class="n">TfidfVectorizer</span>
+<span class="c1"># 激活停用词参数</span>
+<span class="n">tfidf</span> <span class="o">=</span> <span class="n">TfidfVectorizer</span><span class="p">(</span><span class="n">smooth_idf</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">stop_words</span><span class="o">=</span><span class="s2">&quot;english&quot;</span><span class="p">)</span>
+<span class="c1"># 拟合</span>
+<span class="n">tfidf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+<span class="c1"># 将训练集转为向量</span>
+<span class="n">X_train_tfidf</span><span class="o">=</span> <span class="n">tfidf</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+
+
+<span class="c1"># 使用交叉验证对模型进行打分</span>
+<span class="n">scores3</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">LinearSVC</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">3000</span><span class="p">),</span> <span class="n">X_train_tfidf</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mean score of CV:</span><span class="si">{:0.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">scores3</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
+
+<span class="c1"># 训练线性 SVC 模型</span>
+<span class="n">X_test_tfidf</span><span class="o">=</span> <span class="n">tfidf</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+<span class="n">clf</span><span class="o">=</span><span class="n">LinearSVC</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">3000</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train_tfidf</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;train score:</span><span class="si">{:0.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_train_tfidf</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;test score:</span><span class="si">{:0.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test_tfidf</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)))</span> <span class="c1">#略有提升</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>mean score of CV:0.902
+train score:1.000
+test score:0.918
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%E8%BF%9B%E4%B8%80%E6%AD%A5%E5%AD%A6%E4%B9%A0">&#36827;&#19968;&#27493;&#23398;&#20064;<a class="anchor-link" href="#%E8%BF%9B%E4%B8%80%E6%AD%A5%E5%AD%A6%E4%B9%A0">&#182;</a></h2>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>自然语言处理</p>
+<ul>
+<li>推荐宝 NLTK， pip install nltk; 功能包括 分词，为文本加标注，词干提取(stemming)及词干还原(Lemmatization)</li>
+<li>话题建模(topic modeling) 和 文档聚类(document clustering)，差不多是文本数据的降维。话题指的是ML后，将相似的文本进行聚类的结果。<ul>
+<li>和PCA或NMF算法不同，而是使用了 “潜狄利克雷分布”(Latent Dirichlet Alocation, LDA)</li>
+</ul>
+</li>
+<li>自然语言处理的工具 word2vec 库。</li>
+<li>使用 TensorFlow 建立 循环神经网络(RNN) 也实现了重大突破。</li>
+</ul>
+
+</div>
+</div>
+</body>
+
+
+
+
+
+
+
+</html>
